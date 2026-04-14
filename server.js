@@ -23,7 +23,7 @@ if (supabaseUrl && supabaseKey) {
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('src', { extensions: ['html'] }));
+app.use(express.static(path.join(__dirname, 'src'), { extensions: ['html'] }));
 
 // Setup Multer for Memory Storage (Cloud Uploads)
 const storage = multer.memoryStorage();
@@ -343,7 +343,12 @@ mainPages.forEach(page => {
   });
 });
 
-// Start Server
-app.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
-});
+// Start Server only if running directly (not as a serverless function)
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`🚀 Server running on http://localhost:${port}`);
+  });
+}
+
+// Export app for Vercel
+module.exports = app;

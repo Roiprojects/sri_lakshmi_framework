@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Lakshmi Frameworks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0B1B36 0%, #1a3258 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .login-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 50px 40px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .login-glass h1 {
+            margin: 0 0 10px;
+            font-weight: 600;
+            font-size: 2rem;
+            background: linear-gradient(to right, #D4AF37, #f3e5ab);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .login-glass p {
+            color: #ccc;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+        .input-group input:focus {
+            border-color: #D4AF37;
+            background: rgba(0,0,0,0.4);
+        }
+        .btn-login {
+            background: #D4AF37;
+            color: #0B1B36;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-login:hover {
+            background: #f3e5ab;
+            transform: translateY(-2px);
+        }
+        .error {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-glass">
+        <h1>Admin Portal</h1>
+        <p>Secure Access to Lakshmi Frameworks</p>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" placeholder="Enter Secure Passcode" required>
+            </div>
+            <button type="submit" class="btn-login" id="loginBtn">Authenticate <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
+            <div class="error" id="errorMsg"><i class="fas fa-exclamation-circle"></i> Invalid Passcode</div>
+        </form>
+    </div>
+
+    <script>
+        // Check if already logged in
+        if (localStorage.getItem('adminToken')) {
+            window.location.href = '/admin';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+            errorMsg.style.display = 'none';
+            
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    localStorage.setItem('adminToken', data.token);
+                    window.location.href = '/admin';
+                } else {
+                    errorMsg.style.display = 'block';
+                    btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';
+                }
+            } catch (err) {
+                errorMsg.innerHTML = '<i class="fas fa-wifi"></i> Network Error';
+                errorMsg.style.display = 'block';
+                btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';
+            }
+        });
+    </script>
+</body>
+</html>

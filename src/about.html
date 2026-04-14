@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | Lakshmi Framework</title>
+    <meta name="description" content="Learn about Sri Lakshmi Photo Frame Works & Photo Studio — our story, mission, services, and commitment to premium quality framing and photography.">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* =============================================
+           About Page — Extra Styles (matches site theme)
+        ============================================= */
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 28px;
+            margin-top: 50px;
+        }
+        .service-card {
+            background: var(--background-white);
+            border-radius: 16px;
+            padding: 36px 28px;
+            text-align: center;
+            border: 1px solid rgba(212,175,55,0.1);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--secondary-color), #f0c842);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+            transform-origin: left;
+        }
+        .service-card:hover::before { transform: scaleX(1); }
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(212,175,55,0.25);
+        }
+        .service-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(212,175,55,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 22px;
+            font-size: 1.8rem;
+            color: var(--secondary-color);
+            transition: var(--transition);
+        }
+        .service-card:hover .service-icon {
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        .service-card h3 {
+            font-size: 1.15rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        .service-card p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+
+        /* Story Section */
+        .story-section { background-color: var(--primary-color); }
+        .story-section .section-title { color: var(--text-inverse); }
+        .story-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            margin-top: 50px;
+        }
+        @media (max-width: 900px) {
+            .story-grid { grid-template-columns: 1fr; gap: 36px; }
+        }
+        .story-text p {
+            color: #bbbbbb;
+            line-height: 1.9;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+        .story-text .highlight-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(212,175,55,0.12);
+            border: 1px solid rgba(212,175,55,0.3);
+            border-radius: 30px;
+            padding: 7px 18px;
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            font-weight: 500;
+            margin: 6px 6px 6px 0;
+        }
+        .story-image {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 2px solid rgba(212,175,55,0.2);
+            position: relative;
+        }
+        .story-image img { width: 100%; height: 400px; object-fit: cover; display: block; }
+        .story-image-badge {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            font-family: var(--font-heading);
+        }
+        .story-image-badge span { display: block; font-size: 0.75rem; font-weight: 400; opacity: 0.8; }
+
+        /* Why Choose Us (light bg variant for About page) */
+        .about-why-us { background-color: var(--background-light); }
+        .about-why-us .section-title { color: var(--primary-color); }
+        .about-why-us .section-title::after {
+            background: linear-gradient(90deg, var(--secondary-color), #f0c842, var(--secondary-color));
+        }
+        .strengths-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 24px;
+            margin-top: 50px;
+        }
+        .strength-item {
+            background: var(--background-white);
+            border-radius: 14px;
+            padding: 30px 26px;
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--secondary-color);
+            transition: var(--transition);
+        }
+        .strength-item:hover {
+            transform: translateX(6px);
+            box-shadow: var(--shadow-md);
+        }
+        .strength-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(212,175,55,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--secondary-color);
+            flex-shrink: 0;
+        }
+        .strength-text h4 {
+            font-size: 1.05rem;
+            color: var(--primary-color);
+            margin-bottom: 6px;
+        }
+        .strength-text p {
+            font-size: 0.88rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Mission Section */
+        .mission-section { background: var(--background-white); }
+        .mission-banner {
+            max-width: 850px;
+            margin: 40px auto 0;
+            background: var(--primary-color);
+            border-radius: 20px;
+            padding: 50px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(212,175,55,0.2);
+        }
+        .mission-banner::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(212,175,55,0.15), transparent 70%);
+        }
+        .mission-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(212,175,55,0.1), transparent 70%);
+        }
+        .mission-icon {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        .mission-banner h3 {
+            color: var(--secondary-color);
+            font-size: 1.8rem;
+            margin-bottom: 18px;
+        }
+        .mission-banner p {
+            color: #cccccc;
+            font-size: 1.05rem;
+            line-height: 1.85;
+            max-width: 680px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        @media (max-width: 600px) {
+            .mission-banner { padding: 36px 24px; }
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, var(--secondary-color), #f0c842 60%, #c49a45);
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .cta-section h2 {
+            color: var(--primary-color);
+            font-size: 2.4rem;
+            margin-bottom: 16px;
+        }
+        .cta-section p {
+            color: rgba(11,27,54,0.75);
+            font-size: 1.1rem;
+            margin-bottom: 36px;
+            max-width: 580px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .cta-btn-dark {
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            border: 2px solid var(--primary-color);
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .cta-btn-dark:hover {
+            background: transparent;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Intro split */
+        .intro-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        @media (max-width: 900px) {
+            .intro-split { grid-template-columns: 1fr; gap: 36px; }
+        }
+        .intro-split-img {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        .intro-split-img img { width: 100%; height: 380px; object-fit: cover; display: block; }
+        .intro-text .section-title { text-align: left; }
+        .intro-text .section-title::after { margin: 15px 0 0; }
+        .intro-text p {
+            color: var(--text-light);
+            line-height: 1.85;
+            margin-bottom: 18px;
+            font-size: 1rem;
+        }
+        .intro-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .intro-tag {
+            background: rgba(11,27,54,0.07);
+            border: 1px solid rgba(212,175,55,0.3);
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 0.82rem;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+    </style>
+    <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <script>document.documentElement.classList.add('js-enabled');</script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo-wrapper">
+                <img src="assets/logo_new.png" alt="Sri Lakshmi Photo Frame Works Logo" class="logo-img">
+                <div class="logo-text">
+                    <span class="brand-name">Sri Lakshmi</span>
+                    <span class="brand-tagline">Photo Frame Works and Photo Studio</span>
+                </div>
+            </a>
+            <div class="menu-toggle" id="mobile-menu"><i class="fas fa-bars"></i></div>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/about" class="active">About Us</a></li>
+                <li class="dropdown">
+                    <a href="/frames" class="dropbtn">Frames <i class="fas fa-chevron-down"></i></a>
+                    <ul class="dropdown-content">
+                        <li><a href="/frames#passport-frames">Passport and Visa Photo</a></li>
+                        <li><a href="/frames#bulk-certificate">Bulk Certificate Framework</a></li>
+                        <li><a href="/frames#acrylic-frames">Customised Acrylic Photo Frames</a></li>
+                        <li><a href="/frames#collage-frames">Collage Photo Frames</a></li>
+                        <li><a href="/frames#badges-frames">Badges and Frames</a></li>
+                        <li><a href="/frames#id-cards">ID Cards and Tags</a></li>
+                    </ul>
+                </li>
+                <li><a href="/corporate-gifting">Corporate Giftings</a></li>
+                <li><a href="/gallery">Gallery</a></li>
+                <li><a href="/testimonials">Testimonials</a></li>
+                <li><a href="/contact" class="btn btn-primary" style="padding: 10px 24px; color: #1a1a1a !important; font-weight: 600; border: none; line-height: 1;">Contact Us</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main id="main-content">
+
+        <!-- ===== PAGE HEADER (HERO SECTION) ===== -->
+        <header class="page-header">
+            <div class="container">
+                <h1>About Sri Lakshmi Photo Frame Works</h1>
+                <p>Crafting memories into timeless frames with precision and care.</p>
+            </div>
+        </header>
+
+        <!-- ===== ABOUT THE COMPANY ===== -->
+        <section class="section-padding" style="background-color: var(--background-white);">
+            <div class="container">
+                <div class="intro-split">
+                    <div class="intro-split-img reveal-left" id="about-intro-image-container">
+                        <img src="assets/about_studio.png" alt="Sri Lakshmi Photo Frame Works Studio" id="about-intro-img">
+                    </div>
+                    <div class="intro-text reveal-right">
+                        <h2 class="section-title">About Sri Lakshmi Studio</h2>
+                        <p>Located in the heart of Bengaluru, <strong>Sri Lakshmi Photo Frame Works & Photo Studio</strong> is your trusted destination for premium imaging and framing solutions. We specialize in high-quality photo frames, professional photography services, and custom corporate gifting products.</p>
+                        <p>Our craftsmanship brings together years of expertise with modern techniques, ensuring every frame, photo, and gift is delivered with precision and care. Whether it's a passport photo for your travels or a custom collage for your home, we are here to serve you.</p>
+                        <div class="intro-tags">
+                            <span class="intro-tag"><i class="fas fa-camera"></i> Passport & Visa</span>
+                            <span class="intro-tag"><i class="fas fa-certificate"></i> Bulk Framing</span>
+                            <span class="intro-tag"><i class="fas fa-layer-group"></i> Acrylic Frames</span>
+                            <span class="intro-tag"><i class="fas fa-images"></i> Collage Frames</span>
+                            <span class="intro-tag"><i class="fas fa-id-badge"></i> Badges & Tags</span>
+                            <span class="intro-tag"><i class="fas fa-gift"></i> Corporate Gifts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== OUR STORY ===== -->
+        <section class="section-padding story-section">
+            <div class="container">
+                <div class="story-grid">
+                    <div class="story-text reveal-left">
+                        <h2 class="section-title">Our Story</h2>
+                        <p>Every great creation starts with a vision. Sri Lakshmi Photo Frame Works began with a simple mission: to provide the people of Bengaluru with a place where their memories could be treated with the respect and artistry they deserve.</p>
+                        <p>What started as a small framing workshop has grown into a full-service photo studio and corporate gifting hub. Our journey has been defined by a relentless commitment to quality and a passion for detail. Focus on quality, trust, and customer satisfaction is at the core of everything we do.</p>
+                        <div class="story-highlights">
+                            <span class="highlight-pill"><i class="fas fa-check"></i> Quality Craftsmanship</span>
+                            <span class="highlight-pill"><i class="fas fa-check"></i> Customer Satisfaction</span>
+                            <span class="highlight-pill"><i class="fas fa-check"></i> Years of Expertise</span>
+                        </div>
+                    </div>
+                    <div class="story-image reveal-right" id="about-story-image-container">
+                        <img src="assets/hero_banner.png" alt="Our Craftsmanship" id="about-story-img">
+                        <div class="story-image-badge">
+                            15+ <span>Years of Excellence</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== OUR SERVICES ===== -->
+        <section class="section-padding" style="background-color: var(--background-light);">
+            <div class="container">
+                <h2 class="section-title reveal">Our Services</h2>
+                <p class="section-subtitle reveal">Comprehensive framing and photography solutions tailored to your needs.</p>
+                <div class="services-grid stagger-children">
+
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-camera"></i></div>
+                        <h3>Passport & Visa Photos</h3>
+                        <p>High-precision, government-compliant passport and visa photos with instant printing services.</p>
+                    </div>
+
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-layer-group"></i></div>
+                        <h3>Customized Acrylic Frames</h3>
+                        <p>Modern, high-gloss acrylic frames with crystal-clear finish for a premium contemporary look.</p>
+                    </div>
+
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-images"></i></div>
+                        <h3>Collage Frames</h3>
+                        <p>Creative multi-photo layouts that beautifully display your collections of cherished memories.</p>
+                    </div>
+
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-certificate"></i></div>
+                        <h3>Certificate Frames</h3>
+                        <p>Elegant and durable framing solutions for educational institutions and corporate award ceremonies.</p>
+                    </div>
+
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-id-badge"></i></div>
+                        <h3>Badges & ID Cards</h3>
+                        <p>Custom-designed professional badges, ID cards, and branding accessories for events and offices.</p>
+                    </div>
+
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-gift"></i></div>
+                        <h3>Corporate Gifting</h3>
+                        <p>Premium business gifts and customized branded products for corporate occasions and events.</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== WHY CHOOSE US ===== -->
+        <section class="section-padding about-why-us">
+            <div class="container">
+                <h2 class="section-title reveal">Why Choose Us</h2>
+                <p class="section-subtitle reveal">The Sri Lakshmi advantage — where quality meets reliability.</p>
+                <div class="strengths-grid stagger-children">
+
+                    <div class="strength-item">
+                        <div class="strength-icon"><i class="fas fa-award"></i></div>
+                        <div class="strength-text">
+                            <h4>High-Quality Materials</h4>
+                            <p>We use only premium wood, acrylic, and archival materials to ensure your memories last a lifetime.</p>
+                        </div>
+                    </div>
+
+                    <div class="strength-item">
+                        <div class="strength-icon"><i class="fas fa-user-tie"></i></div>
+                        <div class="strength-text">
+                            <h4>Professional Service</h4>
+                            <p>Expert studio and framing services with a focus on precision and customer satisfaction.</p>
+                        </div>
+                    </div>
+
+                    <div class="strength-item">
+                        <div class="strength-icon"><i class="fas fa-pencil-ruler"></i></div>
+                        <div class="strength-text">
+                            <h4>Custom Solutions</h4>
+                            <p>Precision-crafted frames and gifting solutions tailored to your exact style and preferences.</p>
+                        </div>
+                    </div>
+
+                    <div class="strength-item">
+                        <div class="strength-icon"><i class="fas fa-tags"></i></div>
+                        <div class="strength-text">
+                            <h4>Affordable Pricing</h4>
+                            <p>Premium quality framing and photography services at competitive, value-driven price points.</p>
+                        </div>
+                    </div>
+
+                    <div class="strength-item">
+                        <div class="strength-icon"><i class="fas fa-shipping-fast"></i></div>
+                        <div class="strength-text">
+                            <h4>Fast Delivery</h4>
+                            <p>Timely delivery for both individual orders and large-scale corporate requirements.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== OUR MISSION ===== -->
+        <section class="section-padding mission-section">
+            <div class="container">
+                <h2 class="section-title reveal">Our Mission</h2>
+                <p class="section-subtitle reveal">Our commitment to excellence and precision.</p>
+                <div class="mission-banner reveal">
+                    <div class="mission-icon"><i class="fas fa-bullseye"></i></div>
+                    <h3>Precision & Creativity</h3>
+                    <p>Our mission is to deliver premium framing and photography services with creativity and precision. We strive to preserve your memories in their most beautiful form while providing businesses with impactful gifting solutions that reflect their values.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CALL TO ACTION ===== -->
+        <section class="cta-section reveal">
+            <h2>Let's Create Something Beautiful Together</h2>
+            <p>Visit our studio in Bengaluru, explore our gallery, or get in touch to discuss your requirements today.</p>
+            <div class="cta-buttons">
+                <a href="/contact" class="cta-btn-dark"><i class="fas fa-envelope"></i> Contact Us</a>
+                <a href="https://wa.me/918971488451" target="_blank" class="cta-btn-dark"><i class="fab fa-whatsapp"></i> WhatsApp Us</a>
+                <a href="/frames" class="cta-btn-dark"><i class="fas fa-th-large"></i> View Frames</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-col brand-col">
+                <h3>Lakshmi Framework</h3>
+                <p>Premium frames and corporate gifting solutions providing elegance and quality to preserve your memories and strengthen your business relationships.</p>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/sri_lakshmi_photo_frame_works_?igsh=eXJlNjF0Z3pibWxz" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://wa.me/918971488451" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-col links-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/about">About Us</a></li>
+                    <li><a href="/frames">Our Frames</a></li>
+                    <li><a href="/corporate-gifting">Corporate Gifting</a></li>
+                    <li><a href="/gallery">Gallery</a></li>
+                </ul>
+            </div>
+            <div class="footer-col links-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="/contact" class="btn btn-primary" style="padding: 10px 24px; color: #1a1a1a !important; font-weight: 600; border: none; line-height: 1;">Contact Us</a></li>
+                    <li><a href="/testimonials">Testimonials</a></li>
+                    <li><a href="/policy#privacy">Privacy Policy</a></li>
+                    <li><a href="/policy#terms">Terms & Conditions</a></li>
+                </ul>
+            </div>
+            <div class="footer-col contact-col">
+                <h4>Contact Details</h4>
+                <p><i class="fas fa-map-marker-alt"></i> 1/4 Th Main, Nehru Nagar Near Sheshadripuram College,<br>Sheshadripuram, Bangalore, India 560020</p>
+                <p><i class="fas fa-phone-alt"></i> +91 89714 88451, +91 81979 89727</p>
+                <p><i class="fas fa-envelope"></i> sudhakarjack123@gmail.com</p>
+                <p><i class="fas fa-clock"></i> Mon–Sat: 7:30 AM – 10:00 PM<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sun: 7:30 AM – 4:00 PM</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Lakshmi Framework. All rights reserved.</p>
+            <p style="margin-top: 8px; font-size: 0.95rem; font-weight: 500;"><a href="https://wa.me/919945379333" target="_blank" style="color: var(--secondary-color); text-decoration: none; transition: 0.3s;">Developed by ROI Infotech</a></p>
+        </div>
+    </footer>
+
+    <!-- Floating Buttons -->
+    <div class="floating-container">
+        <button id="scroll-to-top" class="floating-btn" aria-label="Scroll to top" title="Scroll to Top"><i class="fas fa-arrow-up"></i></button>
+        <a href="tel:8971488451" class="floating-btn call-float" title="Call Now"><i class="fas fa-phone-alt"></i></a>
+        <a id="whatsapp-float" href="https://wa.me/918971488451" target="_blank" class="floating-btn whatsapp-float" aria-label="Contact us on WhatsApp" title="WhatsApp Us"><i class="fab fa-whatsapp"></i></a>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/about?public=true');
+                const data = await res.json();
+                
+                if (data && data.length > 0) {
+                    // Assuming first image is Intro, second is Story, or using titles
+                    const introImg = data.find(i => i.title.toLowerCase().includes('studio') || i.title.toLowerCase().includes('intro'));
+                    const storyImg = data.find(i => i.title.toLowerCase().includes('story') || i.title.toLowerCase().includes('about'));
+                    
+                    if (introImg) {
+                        const path = introImg.imagepath.startsWith('http') ? introImg.imagepath : '/' + introImg.imagepath;
+                        document.getElementById('about-intro-img').src = path;
+                    }
+                    
+                    if (storyImg) {
+                        const path = storyImg.imagepath.startsWith('http') ? storyImg.imagepath : '/' + storyImg.imagepath;
+                        document.getElementById('about-story-img').src = path;
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading About page content:", err);
+            }
+        });
+    </script>
+</body>
+</html>

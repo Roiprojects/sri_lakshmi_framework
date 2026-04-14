@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Work Gallery | Lakshmi Framework</title>
+    <meta name="description"
+        content="Explore our collection of beautifully crafted photo frames, customized designs, and corporate gifting products.">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .gallery-masonry {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .gallery-masonry {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .gallery-masonry {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery-masonry {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .gallery-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
+            aspect-ratio: 4/3;
+        }
+
+        .gallery-card.hidden {
+            display: none;
+        }
+
+        .gallery-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+            display: block;
+        }
+
+        .gallery-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .gallery-card:hover img {
+            transform: scale(1.08);
+        }
+
+        .gallery-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(11, 27, 54, 0.9) 0%, rgba(11, 27, 54, 0.35) 50%, transparent 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 18px;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .gallery-card:hover .gallery-card-overlay {
+            opacity: 1;
+        }
+
+        .gallery-card-overlay h4 {
+            color: var(--secondary-color);
+            font-size: 1rem;
+            margin-bottom: 4px;
+            font-family: var(--font-heading);
+        }
+
+        .gallery-card-overlay p {
+            color: #ccc;
+            font-size: 0.8rem;
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        .gallery-card-overlay .zoom-icon {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(212, 175, 55, 0.85);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .gallery-card-category {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        /* Lightbox */
+        .lightbox-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .lightbox-modal.open {
+            display: flex;
+        }
+
+        .lightbox-modal img {
+            max-width: 88vw;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            object-fit: contain;
+        }
+
+        .lb-close {
+            position: absolute;
+            top: 24px;
+            right: 28px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 3;
+        }
+
+        .lb-close:hover {
+            background: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        .lb-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 3;
+            backdrop-filter: blur(4px);
+        }
+
+        .lb-arrow:hover {
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .lb-prev {
+            left: 20px;
+        }
+
+        .lb-next {
+            right: 20px;
+        }
+
+        .lb-caption {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(11, 27, 54, 0.85);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            z-index: 3;
+            white-space: nowrap;
+        }
+
+        .lb-counter {
+            position: absolute;
+            top: 28px;
+            left: 28px;
+            background: rgba(11, 27, 54, 0.7);
+            color: var(--secondary-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 3;
+        }
+
+        /* Featured Section */
+        .featured-works {
+            background: var(--primary-color);
+            padding: 80px 20px;
+        }
+
+        .featured-works .section-title {
+            color: var(--text-inverse);
+        }
+
+        .featured-works .section-subtitle {
+            color: #aaa;
+        }
+
+        .featured-works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 50px;
+        }
+
+        .featured-work-card {
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            height: 340px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: var(--transition);
+        }
+
+        .featured-work-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 22px 55px rgba(0, 0, 0, 0.55);
+        }
+
+        .featured-work-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.7s ease;
+            display: block;
+        }
+
+        .featured-work-card:hover img {
+            transform: scale(1.06);
+        }
+
+        .featured-work-info {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(11, 27, 54, 0.95) 25%, rgba(11, 27, 54, 0.3) 65%, transparent);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 24px;
+        }
+
+        .featured-work-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            width: fit-content;
+        }
+
+        .featured-work-info h3 {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+        }
+
+        .featured-work-info p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            line-height: 1.55;
+        }
+
+        /* CTA */
+        .gallery-cta {
+            background: linear-gradient(135deg, var(--secondary-color), #f0c842 60%, #c49a45);
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .gallery-cta h2 {
+            color: var(--primary-color);
+            font-size: 2.3rem;
+            margin-bottom: 14px;
+        }
+
+        .gallery-cta p {
+            color: rgba(11, 27, 54, 0.75);
+            font-size: 1.05rem;
+            max-width: 560px;
+            margin: 0 auto 36px;
+        }
+
+        .gallery-cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-dark-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            border: 2px solid var(--primary-color);
+            padding: 14px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .cta-dark-btn:hover {
+            background: transparent;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+
+        /* Count badge */
+        .gallery-count {
+            text-align: center;
+            margin-bottom: 40px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
+
+        .gallery-count span {
+            color: var(--secondary-color);
+            font-weight: 700;
+        }
+    </style>
+    <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <script>document.documentElement.classList.add('js-enabled');</script>
+</head>
+
+<body>
+
+    <!-- Nav -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo-wrapper">
+                <img src="assets/logo_new.png" alt="Sri Lakshmi Photo Frame Works Logo" class="logo-img">
+                <div class="logo-text">
+                    <span class="brand-name">Sri Lakshmi</span>
+                    <span class="brand-tagline">Photo Frame Works and Photo Studio</span>
+                </div>
+            </a>
+            <div class="menu-toggle" id="mobile-menu"><i class="fas fa-bars"></i></div>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About Us</a></li>
+                <li class="dropdown">
+                    <a href="/frames" class="dropbtn">Frames <i class="fas fa-chevron-down"></i></a>
+                    <ul class="dropdown-content">
+                        <li><a href="/frames#passport-frames">Passport and Visa Photo</a></li>
+                        <li><a href="/frames#bulk-certificate">Bulk Certificate Framework</a></li>
+                        <li><a href="/frames#acrylic-frames">Customised Acrylic Photo Frames</a></li>
+                        <li><a href="/frames#collage-frames">Collage Photo Frames</a></li>
+                        <li><a href="/frames#badges-frames">Badges and Frames</a></li>
+                        <li><a href="/frames#id-cards">ID Cards and Tags</a></li>
+                    </ul>
+                </li>
+                <li><a href="/corporate-gifting">Corporate Giftings</a></li>
+                <li><a href="/gallery" class="active">Gallery</a></li>
+                <li><a href="/testimonials">Testimonials</a></li>
+                <li><a href="/contact" class="btn btn-primary"
+                        style="padding: 10px 24px; color: #1a1a1a !important; font-weight: 600; border: none; line-height: 1;">Contact
+                        Us</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main id="main-content">
+
+        <!-- GALLERY SECTION -->
+        <section class="gallery-section">
+            <div class="container">
+                <div class="gallery-header reveal">
+                    <h1 class="gallery-title">Our Gallery</h1>
+                    <div class="gallery-underline"></div>
+                    <p class="gallery-subtitle">A visual showcase of our finest work in framing and gifting.</p>
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="gallery-filter-bar reveal" id="galleryFilters">
+                    <button class="gallery-filter-btn active" data-filter="all"><i class="fas fa-th"></i> All</button>
+                    <button class="gallery-filter-btn" data-filter="passport-frames"><i class="fas fa-camera"></i>
+                        Passport & Visa</button>
+                    <button class="gallery-filter-btn" data-filter="acrylic-frames"><i class="fas fa-layer-group"></i>
+                        Acrylic Frames</button>
+                    <button class="gallery-filter-btn" data-filter="collage-frames"><i class="fas fa-images"></i>
+                        Collage Frames</button>
+                    <button class="gallery-filter-btn" data-filter="bulk-certificate"><i class="fas fa-certificate"></i>
+                        Certificate Frames</button>
+                    <button class="gallery-filter-btn" data-filter="corporate-mementos"><i class="fas fa-gift"></i>
+                        Corporate Gifts</button>
+                    <button class="gallery-filter-btn" data-filter="badges-frames"><i class="fas fa-id-badge"></i>
+                        Badges & ID Cards</button>
+                </div>
+
+                <!-- Count -->
+                <div class="gallery-count"><span id="galleryVisibleCount">26</span> items displayed</div>
+
+                <!-- Gallery Grid -->
+                <div class="gallery-masonry" id="galleryGrid">
+                    <!-- Javascript will populate this grid dynamically from Supabase API -->
+                    <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #888;">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p style="margin-top: 15px;">Loading from Database...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Fetch Script -->
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                const grid = document.getElementById('galleryGrid');
+                const filterContainer = document.getElementById('galleryFilters');
+                const countEl = document.getElementById('galleryVisibleCount');
+
+                // Lightbox elements
+                const lbModal = document.getElementById('lbModal');
+                const lbImg = document.getElementById('lbImg');
+                const lbCaption = document.getElementById('lbCaption');
+                const lbCounter = document.getElementById('lbCounter');
+
+                let allItems = [];
+                let filteredItems = [];
+                let lbIndex = 0;
+
+                const updateLightbox = () => {
+                    const item = filteredItems[lbIndex];
+                    if (!item) return;
+                    lbImg.src = item.querySelector('img').src;
+                    lbCaption.textContent = item.dataset.title;
+                    lbCounter.textContent = `${lbIndex + 1} / ${filteredItems.length}`;
+                };
+
+                const openLightbox = (index) => {
+                    lbIndex = index;
+                    updateLightbox();
+                    lbModal.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                };
+
+                const closeLightbox = () => {
+                    lbModal.classList.remove('open');
+                    document.body.style.overflow = '';
+                };
+
+                function formatCategoryName(name) {
+                    if (!name) return 'Other';
+                    return name.split(/[-_]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                }
+
+                // Fetch Data
+                try {
+                    let data = [];
+                    let allCategories = [];
+
+                    try {
+                        const galRes = await fetch('/api/gallery?public=true');
+                        if (galRes.ok) data = await galRes.json();
+                    } catch (e) { console.error('Gallery Fetch Error:', e); }
+
+                    try {
+                        const catRes = await fetch('/api/categories');
+                        if (catRes.ok) allCategories = await catRes.json();
+                    } catch (e) { console.error('Categories Fetch Error:', e); }
+                    
+                    const galleryCategories = allCategories.filter(c => c.type === 'gallery');
+
+                    grid.innerHTML = '';
+
+                    if (data.length === 0) {
+                        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center;">No gallery items found yet.</p>';
+                    }
+
+                    // Generate Dynamic Filter Buttons unconditionally
+                    const activeCatNames = [...new Set(data.map(item => item.category || 'other'))];
+                    
+                    // Include all created categories + any implicit categories present in data
+                    const categoriesToDisplay = ['all', ...galleryCategories.map(c => c.name)];
+                    
+                    activeCatNames.forEach(name => {
+                         if (!categoriesToDisplay.includes(name) && name !== 'all') {
+                             categoriesToDisplay.push(name);
+                         }
+                    });
+                    
+                    filterContainer.innerHTML = '';
+                    categoriesToDisplay.forEach(cat => {
+                        const btn = document.createElement('button');
+                        btn.className = `gallery-filter-btn ${cat === 'all' ? 'active' : ''}`;
+                        btn.dataset.filter = cat;
+                        
+                        let displayName = cat;
+                        if (cat === 'all') displayName = '<i class="fas fa-th"></i> All';
+                        else displayName = cat.charAt(0).toUpperCase() + cat.slice(1); // Standard capitalization
+                        
+                        btn.innerHTML = displayName;
+                        
+                        btn.addEventListener('click', () => {
+                            document.querySelectorAll('.gallery-filter-btn').forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                            const filter = btn.dataset.filter;
+                            
+                            filteredItems = [];
+                            allItems.forEach(card => {
+                                if (filter === 'all' || card.dataset.category === filter) {
+                                    card.style.display = 'block';
+                                    filteredItems.push(card);
+                                } else {
+                                    card.style.display = 'none';
+                                }
+                            });
+                            countEl.textContent = filteredItems.length;
+                        });
+                        filterContainer.appendChild(btn);
+                    });
+
+                    // Render Items
+                    data.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'gallery-card reveal';
+                        card.dataset.category = item.category || 'other';
+                        card.dataset.title = item.title;
+                        const fullPath = item.imagepath.startsWith('http') ? item.imagepath : `/${item.imagepath}`;
+
+                        card.innerHTML = `
+                            <span class="gallery-card-category">${formatCategoryName(item.category)}</span>
+                            <img src="${fullPath}" alt="${item.title}">
+                            <div class="gallery-card-overlay">
+                                <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                                <h4>${item.title}</h4>
+                                <p>${item.description || ''}</p>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+
+                    allItems = Array.from(document.querySelectorAll('.gallery-card'));
+                    filteredItems = [...allItems];
+                    countEl.textContent = filteredItems.length;
+
+                    // Trigger reveal observer
+                    if (window.refreshReveal) {
+                        window.refreshReveal();
+                    }
+
+                    // Card Click -> Lightbox
+                    grid.addEventListener('click', (e) => {
+                        const card = e.target.closest('.gallery-card');
+                        if (card) {
+                            const index = filteredItems.indexOf(card);
+                            if (index !== -1) openLightbox(index);
+                        }
+                    });
+
+                } catch (e) {
+                    grid.innerHTML = '<p style="grid-column:1/-1;color:red;">Error loading gallery.</p>';
+                    console.error(e);
+                }
+
+                // Lightbox Nav
+                document.getElementById('lbClose').addEventListener('click', closeLightbox);
+                document.getElementById('lbPrev').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    lbIndex = (lbIndex - 1 + filteredItems.length) % filteredItems.length;
+                    updateLightbox();
+                });
+                document.getElementById('lbNext').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    lbIndex = (lbIndex + 1) % filteredItems.length;
+                    updateLightbox();
+                });
+                lbModal.addEventListener('click', (e) => { if (e.target === lbModal) closeLightbox(); });
+
+                document.addEventListener('keydown', (e) => {
+                    if (!lbModal.classList.contains('open')) return;
+                    if (e.key === 'Escape') closeLightbox();
+                    if (e.key === 'ArrowLeft') { lbIndex = (lbIndex - 1 + filteredItems.length) % filteredItems.length; updateLightbox(); }
+                    if (e.key === 'ArrowRight') { lbIndex = (lbIndex + 1) % filteredItems.length; updateLightbox(); }
+                });
+            });
+        </script>
+
+
+
+        <!-- CTA SECTION -->
+        <section class="gallery-cta reveal">
+            <h2>Need a Custom Frame?</h2>
+            <p>Contact our studio for custom sizing, bulk orders, or any special framing requirements — we're here to
+                help.</p>
+            <div class="gallery-cta-buttons">
+                <a href="tel:8971488451" class="cta-dark-btn"><i class="fas fa-phone-alt"></i> Call Now</a>
+                <a href="https://wa.me/918971488451" target="_blank" class="cta-dark-btn"><i
+                        class="fab fa-whatsapp"></i> WhatsApp Us</a>
+                <a href="contact.html" class="cta-dark-btn"><i class="fas fa-envelope"></i> Send Inquiry</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-col brand-col">
+                <h3>Lakshmi Framework</h3>
+                <p>Premium frames and corporate gifting solutions providing elegance and quality to preserve your
+                    memories and strengthen your business relationships.</p>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/sri_lakshmi_photo_frame_works_?igsh=eXJlNjF0Z3pibWxz"
+                        target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://wa.me/918971488451" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-col links-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="frames.html">Our Frames</a></li>
+                    <li><a href="corporate-gifting.html">Corporate Gifting</a></li>
+                    <li><a href="gallery.html">Gallery</a></li>
+                </ul>
+            </div>
+            <div class="footer-col links-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="contact.html" class="btn btn-primary"
+                            style="padding: 10px 24px; color: #1a1a1a !important; font-weight: 600; border: none; line-height: 1;">Contact
+                            Us</a></li>
+                    <li><a href="testimonials.html">Testimonials</a></li>
+                    <li><a href="policy.html#privacy">Privacy Policy</a></li>
+                    <li><a href="policy.html#terms">Terms & Conditions</a></li>
+                </ul>
+            </div>
+            <div class="footer-col contact-col">
+                <h4>Contact Details</h4>
+                <p><i class="fas fa-map-marker-alt"></i> 1/4 Th Main, Nehru Nagar Near Sheshadripuram
+                    College,<br>Sheshadripuram, Bangalore, India 560020</p>
+                <p><i class="fas fa-phone-alt"></i> +91 89714 88451, +91 81979 89727</p>
+                <p><i class="fas fa-envelope"></i> sudhakarjack123@gmail.com</p>
+                <p><i class="fas fa-clock"></i> Mon–Sat: 7:30 AM – 10:00
+                    PM<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sun: 7:30 AM – 4:00 PM</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Lakshmi Framework. All rights reserved.</p>
+            <p style="margin-top: 8px; font-size: 0.95rem; font-weight: 500;"><a href="https://wa.me/919945379333"
+                    target="_blank"
+                    style="color: var(--secondary-color); text-decoration: none; transition: 0.3s;">Developed by ROI
+                    Infotech</a></p>
+        </div>
+    </footer>
+
+    <!-- Floating --> <!-- Floating Buttons -->
+    <div class="floating-container">
+        <button id="scroll-to-top" class="floating-btn" aria-label="Scroll to top" title="Scroll to Top"><i
+                class="fas fa-arrow-up"></i></button>
+        <a href="tel:8971488451" class="floating-btn call-float" title="Call Now"><i class="fas fa-phone-alt"></i></a>
+        <a id="whatsapp-float" href="https://wa.me/918971488451" target="_blank" class="floating-btn whatsapp-float"
+            aria-label="Contact us on WhatsApp" title="WhatsApp Us"><i class="fab fa-whatsapp"></i></a>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div class="lightbox-modal" id="lbModal">
+        <div class="lb-close" id="lbClose"><i class="fas fa-times"></i></div>
+        <div class="lb-arrow lb-prev" id="lbPrev"><i class="fas fa-chevron-left"></i></div>
+        <div class="lb-arrow lb-next" id="lbNext"><i class="fas fa-chevron-right"></i></div>
+        <img src="" alt="Gallery Full" id="lbImg">
+        <div class="lb-caption" id="lbCaption"></div>
+        <div class="lb-counter" id="lbCounter"></div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

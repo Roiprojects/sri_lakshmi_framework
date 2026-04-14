@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lakshmi Frameworks | Premium Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B1B36;
+            --secondary: #D4AF37;
+            --bg: #f0f4f8;
+            --surface: #ffffff;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0; padding: 0;
+            background: var(--bg);
+            color: var(--text-dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Authentication Blur */
+        body.auth-checking { opacity: 0; transition: opacity 0.3s; }
+        body.auth-ready { opacity: 1; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            z-index: 10;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            padding: 30px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--secondary);
+            letter-spacing: 0.5px;
+        }
+        .sidebar-header p {
+            margin: 5px 0 0;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        .nav-links {
+            padding: 20px 0;
+            flex-grow: 1;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+        .nav-link i { width: 25px; font-size: 1.1rem; }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        .nav-link.active {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--secondary);
+            border-left-color: var(--secondary);
+        }
+        .sidebar-footer {
+            padding: 20px 25px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .logout-btn {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: flex; align-items: center;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .logout-btn:hover { color: var(--danger); }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            margin-left: 260px;
+        }
+        
+        .topbar {
+            background: var(--surface);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            z-index: 5;
+        }
+        .topbar h1 { margin: 0; font-size: 1.4rem; font-weight: 500; }
+        .view-site {
+            padding: 8px 16px;
+            background: var(--bg);
+            color: var(--text-dark);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            border: 1px solid var(--border);
+        }
+        .view-site:hover { background: var(--secondary); color: #000; border-color: var(--secondary); }
+
+        .content-area {
+            padding: 40px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsiveness */
+        @media (max-width: 992px) {
+            .sidebar {
+                left: -260px;
+                transition: left 0.3s ease;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            #menu-toggle-btn {
+                display: block !important;
+            }
+            .topbar {
+                padding: 15px 20px;
+            }
+            .content-area {
+                padding: 20px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .topbar h1 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9;
+            display: none;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Premium Form Card */
+        .premium-card {
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        .card-header { margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .card-header h2 { margin: 0; font-size: 1rem; color: var(--primary); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { margin-bottom: 10px; }
+        .form-group.full { grid-column: 1 / -1; }
+        
+        .form-group label {
+            display: block; margin-bottom: 4px; font-size: 0.8rem; font-weight: 600; color: #64748b;
+        }
+        .form-control {
+            width: 100%; padding: 8px 12px;
+            border: 1.2px solid var(--border);
+            border-radius: 6px;
+            background: #fff;
+            font-family: inherit; font-size: 0.85rem;
+            transition: all 0.25s;
+            box-sizing: border-box;
+        }
+        .form-control:focus { outline: none; border-color: var(--secondary); background: #fff; box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+        
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 6px; font-family: inherit;
+            font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), #1a3258); color: #fff; box-shadow: 0 4px 12px rgba(11,27,54,0.2); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(11,27,54,0.3); }
+        
+        /* Grid Display */
+        .data-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        
+        /* Elegant Data Item */
+        .data-item {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .data-item:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.08); }
+        .data-item-img { height: 180px; width: 100%; object-fit: cover; background: #f1f5f9; display: block; transition: opacity 0.3s; }
+        
+        .status-badge {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(0,0,0,0.6); color: #fff;
+            padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+            backdrop-filter: blur(4px);
+        }
+        .status-badge.hidden { background: rgba(239, 68, 68, 0.9); }
+
+        .data-item-info { padding: 20px; border-bottom: 1px solid var(--border); transition: opacity 0.3s; }
+        .data-item-info h4 { margin: 0 0 8px; font-size: 1.1rem; color: var(--primary); }
+        .data-item-info p { margin: 0 0 12px; font-size: 0.85rem; color: var(--text-light); line-height: 1.5; }
+        .category-tag {
+            display: inline-block; padding: 4px 10px;
+            background: #e0e7ff; color: #4338ca;
+            border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+        }
+
+        .data-item-actions { display: grid; grid-template-columns: 1fr 1fr; }
+        .action-btn {
+            background: transparent; border: none; padding: 12px; font-family: inherit; font-size: 0.85rem;
+            font-weight: 500; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .action-btn:hover { background: #f8fafc; }
+        .btn-toggle { color: var(--text-light); border-right: 1px solid var(--border); }
+        .btn-toggle:hover { color: var(--primary); }
+        .btn-toggle.is-hidden { color: var(--danger); background: #fef2f2; }
+        .btn-del { color: var(--danger); }
+        .btn-del:hover { background: #fef2f2; }
+        
+        .image-preview {
+            width: 100%; height: 150px; border: 2px dashed var(--border); border-radius: 12px;
+            margin-top: 10px; display: none; align-items: center; justify-content: center;
+            overflow: hidden; background: #f8fafc;
+        }
+        .image-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .edit-mode-indicator {
+            display: none; background: #fef9c3; color: #854d0e; padding: 12px 20px;
+            border-radius: 12px; margin-bottom: 20px; font-size: 0.9rem; font-weight: 600;
+            border: 1px solid #fde047; justify-content: space-between; align-items: center;
+        }
+        .btn-cancel {
+            background: #fff; border: 1px solid #fde047; padding: 5px 12px;
+            border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: 0.3s;
+        }
+        .btn-cancel:hover { background: #fef08a; }
+        
+        /* Success Popup */
+        #successToast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(16, 185, 129, 0.95);
+            color: #fff;
+            padding: 25px 50px;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        @keyframes popIn {
+            from { transform: translate(-50%, -40%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* Confirmation Modal */
+        #confirmModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center;
+            z-index: 10000; backdrop-filter: blur(5px);
+            animation: fadeInModal 0.2s ease;
+        }
+        .confirm-box {
+            background: #fff; padding: 40px; border-radius: 20px; width: 420px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4); text-align: center;
+            transform: scale(1); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+        .confirm-msg { font-size: 1.15rem; color: #1e293b; margin-bottom: 30px; line-height: 1.6; font-weight: 500; }
+        .confirm-actions { display: flex; gap: 15px; justify-content: center; }
+        .btn-confirm-modal { background: var(--primary); color: white; padding: 12px 30px; border-radius: 8px; cursor: pointer; border: none; font-weight: 600; transition: 0.3s; font-size: 0.95rem; }
+        .btn-confirm-modal:hover { background: #1a3258; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-cancel-modal { background: #f1f5f9; color: #64748b; padding: 12px 30px; border-radius: 8px; cursor: pointer; border: 1px solid #e2e8f0; font-weight: 600; transition: 0.3s; font-size: 0.95rem; }
+        .btn-cancel-modal:hover { background: #e2e8f0; color: #1e293b; }
+    </style>
+</head>
+<body class="auth-checking">
+
+    <div id="successToast">
+        <i class="fas fa-check-circle fa-3x"></i>
+        <span id="toastMsg" style="font-weight: 600; font-size: 1.2rem;">Action Successful!</span>
+    </div>
+
+    <div id="confirmModal">
+        <div class="confirm-box">
+            <div class="confirm-msg" id="confirmMsg">Are you sure you want to proceed?</div>
+            <div class="confirm-actions">
+                <button class="btn-cancel-modal" id="cancelBtn">Cancel</button>
+                <button class="btn-confirm-modal" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <h2>Lakshmi</h2>
+            <p>Admin Control Panel</p>
+        </div>
+        <div class="nav-links">
+            <div class="nav-link" data-target="testimonials"><i class="fas fa-comment-dots"></i> Testimonials</div>
+            <div class="nav-link" data-target="home_gallery"><i class="fas fa-star"></i> Home Preview</div>
+            <div class="nav-link" data-target="gallery"><i class="fas fa-images"></i> Full Gallery</div>
+            <div class="nav-link" data-target="gallery_categories"><i class="fas fa-tags"></i> Gallery Categories</div>
+            <div class="nav-link" data-target="frames"><i class="fas fa-vector-square"></i> Frames</div>
+            <div class="nav-link" data-target="frame_categories"><i class="fas fa-list-ul"></i> Frames Categories</div>
+            <div class="nav-link" data-target="corporate_gifts"><i class="fas fa-gift"></i> Corporate Gifts</div>
+            <div class="nav-link" data-target="hero_banners"><i class="fas fa-desktop"></i> Hero Banners</div>
+            <div class="nav-link" data-target="about"><i class="fas fa-info-circle"></i> About Page</div>
+            <div class="nav-link" data-target="settings"><i class="fas fa-cog"></i> Site Settings</div>
+        </div>
+        <div class="sidebar-footer">
+            <a class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt" style="margin-right:10px;"></i> Secure Logout</a>
+        </div>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button id="menu-toggle-btn" style="background: none; border: none; font-size: 1.5rem; color: var(--primary); cursor: pointer; display: none;" aria-label="Toggle Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 id="pageTitle">Gallery Management</h1>
+            </div>
+            <a href="/" target="_blank" class="view-site"><i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> View Live Site</a>
+        </div>
+
+        <div class="content-area">
+
+            <!-- HOME PREVIEW TAB -->
+            <div id="home_gallery" class="tab-content active">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Home Gallery Preview</h2></div>
+                    <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-light);">Manage images that appear specifically in the "Featured Works" section on the Homepage. <strong>These are separate from the full Gallery page.</strong></p>
+                    <div id="home_galleryEditIndicator" class="edit-mode-indicator">
+                        <span><i class="fas fa-edit"></i> You are currently editing a home preview item</span>
+                        <button type="button" class="btn-cancel" onclick="cancelEdit('home_gallery')">Cancel Edit</button>
+                    </div>
+                    <form id="homeGalleryForm">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Display Title</label><input type="text" name="title" class="form-control" required></div>
+                            <div class="form-group">
+                                <label>Category Tag</label>
+                                <input type="text" name="category" class="form-control" placeholder="e.g. Wedding, Event" required>
+                            </div>
+                            <div class="form-group full">
+                                <label>Upload Photo</label>
+                                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'homeGalleryPreview')">
+                                <div id="homeGalleryPreview" class="image-preview"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="homeGallerySubmitBtn"><i class="fas fa-star" style="margin-right: 8px;"></i> Add to Home Preview</button>
+                    </form>
+                </div>
+                <div class="data-header"><h2>Active Home Previews</h2></div>
+                <div class="data-grid" id="home_galleryGrid"></div>
+            </div>
+
+            <!-- GALLERY TAB -->
+            <div id="gallery" class="tab-content">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Upload to Gallery (Full Showcase Page)</h2></div>
+                    <div id="galleryEditIndicator" class="edit-mode-indicator">
+                        <span><i class="fas fa-edit"></i> You are currently editing a gallery item</span>
+                        <button type="button" class="btn-cancel" onclick="cancelEdit('gallery')">Cancel Edit</button>
+                    </div>
+                    <form id="galleryForm">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Gallery Display Title</label><input type="text" name="title" class="form-control" required></div>
+                            <div class="form-group">
+                                <label for="galCategory">Gallery Category</label>
+                                <select id="galCategorySelect" name="category" class="form-control" required>
+                                    <option value="" disabled selected>Select Category...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Upload Photo</label>
+                                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'galleryPreview')">
+                                <div id="galleryPreview" class="image-preview"></div>
+                            </div>
+                            <div class="form-group full"><label>Work/Project Description</label><textarea name="description" class="form-control" rows="2" required></textarea></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="gallerySubmitBtn"><i class="fas fa-cloud-upload-alt" style="margin-right: 8px;"></i> Add to Full Gallery</button>
+                    </form>
+                </div>
+                <div class="data-header"><h2>Live Gallery Portfolio</h2></div>
+                <div class="data-grid" id="galleryGrid"></div>
+            </div>
+
+            <!-- GALLERY CATEGORIES TAB -->
+            <div id="gallery_categories" class="tab-content">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Manage Gallery Categories</h2></div>
+                    <form id="galleryCatForm" onsubmit="event.preventDefault(); addCategory('gallery')">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>Category Name (Display text)</label>
+                                <input type="text" id="galCatName" class="form-control" placeholder="e.g. Wedding Photography" required>
+                            </div>
+                        </div>
+                        <div class="form-actions" style="display:flex; gap:10px;">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Create Gallery Category</button>
+                            <button type="button" class="btn-cancel" onclick="syncCategories('gallery')" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">
+                                <i class="fas fa-sync-alt" style="margin-right:8px;"></i> Sync from Portfolio Items
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="data-header"><h2>Active Gallery Categories</h2></div>
+                <div class="data-grid" id="galleryCatGrid"></div>
+            </div>
+
+            <!-- FRAMES TAB -->
+            <div id="frames" class="tab-content">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Add Frame Product (Store Listing)</h2></div>
+                    <div id="framesEditIndicator" class="edit-mode-indicator">
+                        <span><i class="fas fa-edit"></i> You are currently editing a product</span>
+                        <button type="button" class="btn-cancel" onclick="cancelEdit('frames')">Cancel Edit</button>
+                    </div>
+                    <form id="framesForm">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Product Name</label><input type="text" name="title" class="form-control" required></div>
+                            <div class="form-group">
+                                <label>Product Category</label>
+                                <select id="frameCategorySelect" name="category" class="form-control" required>
+                                    <option value="" disabled selected>Select Category...</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Price/Promo Tag</label><input type="text" name="badgetext" class="form-control" placeholder="e.g. Starting at ₹99"></div>
+                            <div class="form-group full"><label>Detailed Product Description</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+                            <div class="form-group full">
+                                <label>Upload Product Image</label>
+                                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'framesPreview')">
+                                <div id="framesPreview" class="image-preview"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="framesSubmitBtn"><i class="fas fa-plus-circle" style="margin-right: 8px;"></i> Add New Product</button>
+                    </form>
+                </div>
+                <div class="data-header"><h2>Live Product Catalog</h2></div>
+                <div class="data-grid" id="framesGrid"></div>
+            </div>
+
+            <!-- FRAME CATEGORIES TAB -->
+            <div id="frame_categories" class="tab-content">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Manage Frame Categories</h2></div>
+                    <form id="frameCatForm" onsubmit="event.preventDefault(); addCategory('frame')">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>Category Name (Display text)</label>
+                                <input type="text" id="frameCatName" class="form-control" placeholder="e.g. Premium Acrylic" required>
+                            </div>
+                        </div>
+                        <div class="form-actions" style="display:flex; gap:10px;">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Create Frame Category</button>
+                            <button type="button" class="btn-cancel" onclick="syncCategories('frames')" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">
+                                <i class="fas fa-sync-alt" style="margin-right:8px;"></i> Sync from Product Inventory
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="data-header"><h2>Active Frame Categories</h2></div>
+                <div class="data-grid" id="frameCatGrid"></div>
+            </div>
+
+            <!-- TESTIMONIALS TAB -->
+            <div id="testimonials" class="tab-content">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Inject Testimonial</h2></div>
+                    <form id="testimonialsForm">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Client Name</label><input type="text" name="clientname" class="form-control" required></div>
+                            <div class="form-group"><label>Stars (1-5)</label><input type="number" name="rating" class="form-control" min="1" max="5" value="5" required></div>
+                            <div class="form-group full"><label>Client Quote</label><textarea name="quote" class="form-control" rows="3" required></textarea></div>
+                            <div class="form-group full"><label>Client Avatar (Optional)</label><input type="file" name="image" class="form-control" accept="image/*"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-cloud-upload-alt" style="margin-right: 8px;"></i> Publish Testimonial</button>
+                    </form>
+                </div>
+                <div class="data-header"><h2>Live Testimonials</h2></div>
+                <div class="data-grid" id="testimonialsGrid"></div>
+            </div>
+
+            <!-- CORPORATE GIFTS TAB -->
+            <div id="corporate_gifts" class="tab-content">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Add Corporate Offering</h2></div>
+                    <div id="corporate_giftsEditIndicator" class="edit-mode-indicator">
+                        <span><i class="fas fa-edit"></i> You are currently editing a corporate item</span>
+                        <button type="button" class="btn-cancel" onclick="cancelEdit('corporate_gifts')">Cancel Edit</button>
+                    </div>
+                    <form id="corporateForm">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Gallery Title</label><input type="text" name="title" class="form-control" required></div>
+                            <div class="form-group">
+                                <label>Category Tag</label>
+                                <input type="text" name="category" class="form-control" list="corp_categories_list" placeholder="Choose or type new..." required>
+                                <datalist id="corp_categories_list">
+                                    <option value="photo-frames">Customized Photo Frames</option>
+                                    <option value="mementos">Corporate Mementos</option>
+                                    <option value="certificates">Certificate Framing</option>
+                                    <option value="badges">Professional Badges</option>
+                                    <option value="id-cards">ID Cards & Tags</option>
+                                    <option value="custom-gifts">Personalized Gifts</option>
+                                </datalist>
+                            </div>
+                            <div class="form-group full"><label>Description</label><textarea name="description" class="form-control" rows="2" required></textarea></div>
+                            <div class="form-group full">
+                                <label>Upload Image</label>
+                                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'corporatePreview')">
+                                <div id="corporatePreview" class="image-preview"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="corporateSubmitBtn"><i class="fas fa-cloud-upload-alt" style="margin-right: 8px;"></i> Publish Corporate Item</button>
+                    </form>
+                </div>
+                <div class="data-header"><h2>Live Corporate Gifting</h2></div>
+                <div class="data-grid" id="corporate_giftsGrid"></div>
+            </div>
+
+            <!-- HERO BANNERS TAB -->
+            <div id="hero_banners" class="tab-content">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Manage Homepage Hero Banners</h2></div>
+                    <div id="hero_bannersEditIndicator" class="edit-mode-indicator">
+                        <span><i class="fas fa-edit"></i> You are currently editing a hero banner</span>
+                        <button type="button" class="btn-cancel" onclick="cancelEdit('hero_banners')">Cancel Edit</button>
+                    </div>
+                    <form id="heroBannersForm">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Main Heading/Title</label><input type="text" name="title" class="form-control" required></div>
+                            <div class="form-group"><label>Subtext/Tagline</label><input type="text" name="subtitle" class="form-control" required></div>
+                            <div class="form-group full">
+                                <label>Upload Hero Background Image</label>
+                                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'heroPreview')">
+                                <div id="heroPreview" class="image-preview"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="heroBannersSubmitBtn"><i class="fas fa-desktop" style="margin-right: 8px;"></i> Save Hero Banner</button>
+                    </form>
+                </div>
+                <div class="data-header"><h2>Active Hero Banners</h2></div>
+                <div class="data-grid" id="hero_bannersGrid"></div>
+            </div>
+
+            <!-- ABOUT PAGE TAB -->
+            <div id="about" class="tab-content">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Manage About Page Content</h2></div>
+                    <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-light);">Update images and banners specifically for the "About Us" page. Use this for the "Our Story" image and mission sections.</p>
+                    <div id="aboutEditIndicator" class="edit-mode-indicator">
+                        <span><i class="fas fa-edit"></i> You are currently editing about content</span>
+                        <button type="button" class="btn-cancel" onclick="cancelEdit('about')">Cancel Edit</button>
+                    </div>
+                    <form id="aboutForm">
+                        <div class="form-grid">
+                            <div class="form-group full"><label>Section Title/Reference</label><input type="text" name="title" class="form-control" placeholder="e.g. Our Story Image" required></div>
+                            <div class="form-group full"><label>Context/Alt Text</label><input type="text" name="description" class="form-control"></div>
+                            <div class="form-group full">
+                                <label>Upload Image</label>
+                                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'aboutPreview')">
+                                <div id="aboutPreview" class="image-preview"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="aboutSubmitBtn"><i class="fas fa-info-circle" style="margin-right: 8px;"></i> Save About Content</button>
+                    </form>
+                </div>
+                <div class="data-header"><h2>Live About Page Media</h2></div>
+                <div class="data-grid" id="aboutGrid"></div>
+            </div>
+
+            <!-- SETTINGS TAB -->
+            <div id="settings" class="tab-content">
+                <div class="premium-card">
+                    <div class="card-header"><h2>Global Contact Settings</h2></div>
+                    <form id="settingsForm">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Office Phone Number</label><input type="text" id="phoneInput" class="form-control" required placeholder="+91 12345 67890"></div>
+                            <div class="form-group"><label>WhatsApp Link Number (Numbers only)</label><input type="text" id="whatsappInput" class="form-control" required placeholder="911234567890"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save" style="margin-right: 8px;"></i> Save Global Changes</button>
+                    </form>
+                </div>
+                <div class="premium-card">
+                    <div class="card-header"><h2>Security Notice</h2></div>
+                    <p style="font-size: 0.9rem; color: #64748b;">The Admin Password is stored securely in the server's environment configuration. If you need to change it, please contact your system administrator or update the <code>.env</code> file directly.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Security Gate
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+            window.location.href = '/login';
+        } else {
+            document.body.classList.remove('auth-checking');
+            document.body.classList.add('auth-ready');
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/login';
+        }
+
+        // Auth headers for Fetch
+        const authHeaders = { 'Authorization': `Bearer ${token}` };
+
+        // Editing State
+        window.editingState = {
+            gallery: null,
+            frames: null,
+            testimonials: null,
+            corporate_gifts: null,
+            hero_banners: null,
+            home_gallery: null,
+            about: null
+        };
+
+        // Tab Navigation
+        const titles = {
+            'gallery': 'Gallery Database', 'gallery_categories': 'Gallery Categories', 
+            'frames': 'Frames & Products', 'frame_categories': 'Frame Categories',
+            'testimonials': 'Client Reviews', 'corporate_gifts': 'Corporate Options',
+            'hero_banners': 'Home Hero Banners', 'settings': 'Site-Wide Settings',
+            'home_gallery': 'Home Preview Items', 'about': 'About Page Content'
+        };
+
+        const originalBtnText = {
+            'gallery': 'Add to Full Gallery',
+            'frames': 'Add New Product',
+            'testimonials': 'Publish Testimonial',
+            'corporate_gifts': 'Publish Corporate Item',
+            'hero_banners': 'Save Hero Banner',
+            'home_gallery': 'Add to Home Preview',
+            'about': 'Save About Content'
+        };
+
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                document.getElementById('phoneInput').value = data.phone || '';
+                document.getElementById('whatsappInput').value = data.whatsapp || '';
+            } catch(e) {}
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                link.classList.add('active');
+                const target = link.getAttribute('data-target');
+                document.getElementById(target).classList.add('active');
+                document.getElementById('pageTitle').innerText = titles[target] || 'Management';
+                
+                if (target === 'settings') {
+                    loadSettings();
+                } else if (target === 'gallery_categories' || target === 'frame_categories') {
+                    fetchCategories();
+                } else {
+                    if (target === 'gallery' || target === 'frames') fetchCategories(); // Ensure dropdowns are fresh
+                    fetchData(target);
+                }
+            });
+        });
+
+        const endpoints = {
+            'gallery': '/api/gallery', 'frames': '/api/frames',
+            'testimonials': '/api/testimonials', 'corporate_gifts': '/api/corporate_gifts',
+            'categories': '/api/categories', 'hero_banners': '/api/hero_banners',
+            'home_gallery': '/api/home-gallery', 'about': '/api/about'
+        };
+
+        // Render Data
+        async function fetchData(type) {
+            const gridId = type + 'Grid';
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #94a3b8;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+            
+            try {
+                const res = await fetch(endpoints[type]);
+                if(res.status === 403) return logout();
+                const data = await res.json();
+                grid.innerHTML = '';
+                
+                if (data.length === 0) {
+                    grid.innerHTML = '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #94a3b8; background: #fff; border-radius: 12px; border: 1px dashed #ccc;">No records found. The database is empty for this section.</div>';
+                    return;
+                }
+                
+                data.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'data-item';
+
+                    const imgPath = item.imagepath || item.clientimage || 'assets/placeholder.jpg';
+                    const img = imgPath.startsWith('http') ? imgPath : '/' + imgPath;
+                    const title = item.title || item.clientname || item.name || 'Untitled';
+                    const desc = item.description || item.quote || item.subtitle || '';
+                    const badge = item.category || item.badgetext || (item.rating ? item.rating + ' Stars' : null);
+                    const isVisible = item.is_visible !== false;
+
+                    el.innerHTML = `
+                        <img src="${img}" class="data-item-img" style="opacity: ${isVisible ? 1 : 0.4}">
+                        ${!isVisible ? '<div class="status-badge hidden"><i class="fas fa-eye-slash"></i> Hidden</div>' : '<div class="status-badge"><i class="fas fa-circle" style="color:#10b981; font-size: 8px; margin-right:4px;"></i> Live</div>'}
+                        <div class="data-item-info" style="opacity: ${isVisible ? 1 : 0.5}">
+                            ${badge ? `<div class="category-tag mb-2">${badge}</div>` : ''}
+                            <h4 style="margin-top: 8px;">${title}</h4>
+                            <p>${desc.substring(0, 75)}${desc.length > 75 ? '...' : ''}</p>
+                        </div>
+                        <div class="data-item-actions" style="grid-template-columns: 1fr 1fr 1fr;">
+                            <button onclick="toggleVisibility('${type}', '${item.id}', ${!isVisible})" class="action-btn btn-toggle ${!isVisible ? 'is-hidden' : ''}">
+                                <i class="fas ${isVisible ? 'fa-eye-slash' : 'fa-eye'}"></i> ${isVisible ? 'Hide' : 'Show'}
+                            </button>
+                            <button onclick="editItem('${type}', '${item.id}')" class="action-btn" style="border-right: 1px solid var(--border);">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button onclick="deleteItem('${type}', '${item.id}')" class="action-btn btn-del">
+                                <i class="fas fa-trash-alt"></i> Del
+                            </button>
+                        </div>
+                    `;
+                    grid.appendChild(el);
+                });
+            } catch (err) {
+                grid.innerHTML = '<div style="color: red; padding: 20px;">Network Error connecting to Supabase.</div>';
+            }
+        }
+
+        // Category Management Functions
+        async function fetchCategories() {
+            try {
+                const res = await fetch('/api/categories');
+                const categories = await res.json();
+                
+                const galCats = categories.filter(c => c.type === 'gallery');
+                const frameCats = categories.filter(c => c.type === 'frame');
+                
+                renderCategoryGrid('galleryCatGrid', galCats);
+                renderCategoryGrid('frameCatGrid', frameCats);
+                
+                populateSelect('galCategorySelect', galCats);
+                populateSelect('frameCategorySelect', frameCats);
+            } catch (e) {}
+        }
+
+        function renderCategoryGrid(gridId, cats) {
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            grid.innerHTML = '';
+            if (cats.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1; color:#94a3b8; font-size:0.9rem;">No categories defined.</div>';
+                return;
+            }
+            cats.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'data-item';
+                item.style.padding = '15px';
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.innerHTML = `
+                    <span style="font-weight: 500;">${c.name}</span>
+                    <button onclick="deleteCategory('${c.id}')" class="btn-del" style="background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('successToast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.style.display = 'flex';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.style.opacity = '1';
+                }, 500);
+            }, 2000);
+        }
+
+        function customConfirm(msg) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('confirmModal');
+                const ok = document.getElementById('confirmBtn');
+                const cancel = document.getElementById('cancelBtn');
+                const msgEl = document.getElementById('confirmMsg');
+                
+                msgEl.innerText = msg;
+                modal.style.display = 'flex';
+                
+                const handler = (val) => {
+                    modal.style.display = 'none';
+                    ok.onclick = null;
+                    cancel.onclick = null;
+                    resolve(val);
+                };
+                
+                ok.onclick = () => handler(true);
+                cancel.onclick = () => handler(false);
+            });
+        }
+
+        function populateSelect(selectId, cats) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            const currentVal = select.value;
+            select.innerHTML = '<option value="" disabled selected>Select Category...</option>';
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = c.name;
+                select.appendChild(opt);
+            });
+            if (currentVal) select.value = currentVal;
+        }
+
+        async function addCategory(type) {
+            const inputId = type === 'gallery' ? 'galCatName' : 'frameCatName';
+            const input = document.getElementById(inputId);
+            const name = input.value.trim();
+            if (!name) return;
+            
+            if (!await customConfirm(`Create new ${type} category: "${name}"?`)) return;
+
+            try {
+                const res = await fetch('/api/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...authHeaders },
+                    body: JSON.stringify({ name, type })
+                });
+                if (res.ok) {
+                    input.value = '';
+                    showToast('Category created!');
+                    fetchCategories();
+                }
+            } catch (e) { alert('Failed to add category'); }
+        }
+
+        async function syncCategories(type) {
+            if (!await customConfirm(`This will scan all existing ${type} items and add any missing categories to your list. Proceed?`)) return;
+            
+            try {
+                const itemRes = await fetch(endpoints[type]);
+                const items = await itemRes.json();
+                
+                const catRes = await fetch('/api/categories');
+                const existingCats = await catRes.json();
+                const targetType = type === 'gallery' ? 'gallery' : 'frame';
+                const existingNames = existingCats.filter(c => c.type === targetType).map(c => c.name.toLowerCase());
+                
+                const uniqueItemCats = [...new Set(items.map(i => i.category).filter(Boolean))];
+                
+                let addedCount = 0;
+                for (const catName of uniqueItemCats) {
+                    if (!existingNames.includes(catName.toLowerCase())) {
+                        await fetch('/api/categories', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', ...authHeaders },
+                            body: JSON.stringify({ name: catName, type: targetType })
+                        });
+                        addedCount++;
+                    }
+                }
+                
+                showToast(`Sync complete! Added ${addedCount} categories.`);
+                fetchCategories();
+            } catch (err) {
+                console.error('Sync failed:', err);
+                alert('Sync failed.');
+            }
+        }
+
+        async function deleteCategory(id) {
+            if (!await customConfirm('Permanent deletion of this category will not affect existing items but will remove it from dropdowns. Proceed?')) return;
+            try {
+                const res = await fetch('/api/categories/' + id, { method: 'DELETE', headers: authHeaders });
+                if (res.ok) {
+                    showToast('Category removed');
+                    fetchCategories();
+                }
+            } catch (e) {}
+        }
+
+        // Image Preview logic
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}">`;
+                    preview.style.display = 'flex';
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }        // Edit Item logic
+        async function editItem(type, id) {
+            try {
+                const res = await fetch(`${endpoints[type]}`);
+                const data = await res.json();
+                const item = data.find(i => i.id == id);
+                if (!item) return;
+
+                let formId = type;
+                if (type === 'corporate_gifts') formId = 'corporate';
+                if (type === 'hero_banners') formId = 'heroBanners';
+                if (type === 'home_gallery') formId = 'homeGallery';
+                if (type === 'about') formId = 'about';
+                
+                const form = document.getElementById(`${formId}Form`);
+                
+                // Set editing state
+                window.editingState[type] = id;
+                
+                // Show indicator
+                const indicator = document.getElementById(`${type}EditIndicator`);
+                if (indicator) indicator.style.display = 'flex';
+
+                // Update button text
+                const submitBtn = document.getElementById(`${formId}SubmitBtn`);
+                if (submitBtn) submitBtn.innerHTML = `<i class="fas fa-save" style="margin-right: 8px;"></i> Update ${type === 'gallery' ? 'Gallery Item' : (type === 'hero_banners' ? 'Hero Banner' : 'Item')}`;
+
+                // Fill form
+                Object.keys(item).forEach(key => {
+                    const input = form.querySelector(`[name="${key}"]`);
+                    if (input && input.type !== 'file') {
+                        input.value = item[key];
+                    }
+                });
+
+                // Show preview of current image
+                const previewId = `${type === 'corporate_gifts' ? 'corporate' : (type === 'hero_banners' ? 'hero' : type)}Preview`;
+                const preview = document.getElementById(previewId);
+                const imgPath = item.imagepath || item.clientimage;
+                if (preview && imgPath) {
+                    const imgSrc = imgPath.startsWith('http') ? imgPath : '/' + imgPath;
+                    preview.innerHTML = `<img src="${imgSrc}">`;
+                    preview.style.display = 'flex';
+                }
+
+                form.scrollIntoView({ behavior: 'smooth' });
+            } catch (err) {
+                console.error('Error loading item for edit:', err);
+            }
+        }
+
+        function cancelEdit(type) {
+            window.editingState[type] = null;
+            const indicator = document.getElementById(`${type}EditIndicator`);
+            if (indicator) indicator.style.display = 'none';
+            
+            let formId = type;
+            if (type === 'corporate_gifts') formId = 'corporate';
+            if (type === 'hero_banners') formId = 'heroBanners';
+            if (type === 'home_gallery') formId = 'homeGallery';
+            if (type === 'about') formId = 'about';
+
+            const form = document.getElementById(`${formId}Form`);
+            if (form) form.reset();
+            
+            const submitBtn = document.getElementById(`${formId}SubmitBtn`);
+            if (submitBtn) {
+                let text = 'Publish Item';
+                if (type === 'gallery') text = 'Add to Gallery Showcase';
+                if (type === 'frames') text = 'Add Frame Product';
+                if (type === 'hero_banners') text = 'Save Hero Banner';
+                submitBtn.innerHTML = `<i class="fas fa-plus"></i> ${text}`;
+            }
+
+            const previewId = `${type === 'corporate_gifts' ? 'corporate' : (type === 'hero_banners' ? 'hero' : type)}Preview`;
+            const preview = document.getElementById(previewId);
+            if (preview) {
+                preview.style.display = 'none';
+                preview.innerHTML = '';
+            }
+        }
+  // Attach Secure Forms
+        function attachForm(formId, type) {
+            const form = document.getElementById(formId);
+            if (!form) return;
+            
+            form.addEventListener('submit', async e => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                const isEdit = window.editingState[type] !== null;
+                
+                if (!await customConfirm(`Are you sure you want to ${isEdit ? 'update' : 'publish'} this ${type}?`)) return;
+
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEdit ? 'Updating...' : 'Uploading...'}`;
+                
+                try {
+                    const url = isEdit ? `${endpoints[type]}/${window.editingState[type]}` : endpoints[type];
+                    const method = isEdit ? 'PUT' : 'POST';
+                    
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: authHeaders,
+                        body: new FormData(e.target)
+                    });
+
+                    if (res.ok) {
+                        showToast(isEdit ? 'Changes saved!' : 'Successfully published!');
+                        cancelEdit(type);
+                        fetchData(type);
+                    } else if (res.status === 403) {
+                        logout();
+                    } else {
+                        const errData = await res.json();
+                        alert('Operation failed: ' + (errData.error || 'Unknown error'));
+                    }
+                } catch(err) {
+                    alert('Network error.');
+                }
+                btn.innerHTML = originalText;
+            });
+        }
+        
+        attachForm('galleryForm', 'gallery');
+        attachForm('framesForm', 'frames');
+        attachForm('testimonialsForm', 'testimonials');
+        attachForm('corporateForm', 'corporate_gifts');
+        attachForm('heroBannersForm', 'hero_banners');
+        attachForm('homeGalleryForm', 'home_gallery');
+        attachForm('aboutForm', 'about');
+
+        // Settings Form handler
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            try {
+                const phone = document.getElementById('phoneInput').value;
+                const whatsapp = document.getElementById('whatsappInput').value;
+                
+                await fetch('/api/settings', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders },
+                    body: JSON.stringify({ id: 'phone', value: phone })
+                });
+                await fetch('/api/settings', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders },
+                    body: JSON.stringify({ id: 'whatsapp', value: whatsapp })
+                });
+                alert('Contact settings updated successfully!');
+            } catch(err) {
+                alert('Error saving settings');
+            }
+            btn.innerHTML = '<i class="fas fa-save" style="margin-right: 8px;"></i> Save Global Changes';
+        });
+
+        // Secure Delete
+        async function deleteItem(type, id) {
+            if(!await customConfirm('Are you sure you want to delete this item?')) return;
+            try {
+                const res = await fetch(`${endpoints[type]}/${id}`, { 
+                    method: 'DELETE',
+                    headers: authHeaders
+                });
+                if(res.status === 403) return logout();
+                if(res.ok) {
+                    showToast('Item deleted permanentely');
+                    fetchData(type);
+                } else {
+                    alert('Delete failed.');
+                }
+            } catch(e) { alert('Error deleting'); }
+        }
+
+        // Secure Toggle
+        async function toggleVisibility(type, id, makeVisible) {
+            try {
+                const res = await fetch(`${endpoints[type]}/${id}`, { 
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', ...authHeaders },
+                    body: JSON.stringify({ is_visible: makeVisible })
+                });
+                if(res.status === 403) return logout();
+                if (res.ok) fetchData(type);
+            } catch(e) { alert('Error updating visibility'); }
+        }
+
+        fetchData('home_gallery');
+    </script>
+
+    <script>
+        // Sidebar Toggle Logic for Mobile
+        const menuToggleBtn = document.getElementById('menu-toggle-btn');
+        const adminSidebar = document.getElementById('adminSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            adminSidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        }
+
+        if (menuToggleBtn) {
+            menuToggleBtn.addEventListener('click', toggleSidebar);
+        }
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+        }
+
+        // Close sidebar on link click (mobile)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 992) {
+                    toggleSidebar();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

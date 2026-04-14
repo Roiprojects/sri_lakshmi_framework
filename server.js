@@ -313,6 +313,10 @@ app.post('/api/migrate-data', requireAuth, async (req, res) => {
 });
 
 // Main Page Routes for Clean URLs
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'index.html'));
+});
+
 const mainPages = [
   'about',
   'gallery',

@@ -389,7 +389,7 @@
             font-weight: 700;
         }
     </style>
-    <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="/assets/favicon.png"><link rel="stylesheet" href="/styles.css">
     <script>document.documentElement.classList.add('js-enabled');</script>
 </head>
 
@@ -586,11 +586,11 @@
                         card.className = 'gallery-card reveal';
                         card.dataset.category = item.category || 'other';
                         card.dataset.title = item.title;
-                        const fullPath = item.imagepath.startsWith('http') ? item.imagepath : `/${item.imagepath}`;
+                        const imgPath = item.imagepath.startsWith('http') ? item.imagepath : '/' + item.imagepath;
 
                         card.innerHTML = `
                             <span class="gallery-card-category">${formatCategoryName(item.category)}</span>
-                            <img src="${fullPath}" alt="${item.title}">
+                            <img src="${imgPath}" alt="${item.title}">
                             <div class="gallery-card-overlay">
                                 <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
                                 <h4>${item.title}</h4>
@@ -734,7 +734,7 @@
         <div class="lb-counter" id="lbCounter"></div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
 
 </body>
 

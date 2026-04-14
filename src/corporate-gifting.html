@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="/assets/favicon.png"><link rel="stylesheet" href="/styles.css">
     <script>document.documentElement.classList.add('js-enabled');</script>
 </head>
 <body>
@@ -230,7 +230,7 @@
         <a id="whatsapp-float" href="https://wa.me/918971488451" target="_blank" class="floating-btn whatsapp-float"><i class="fab fa-whatsapp"></i></a>
     </div>
 
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('corporate-grid');
@@ -247,13 +247,14 @@
                 grid.innerHTML = ''; // Clear spinner
 
                 products.forEach(item => {
+                    const img = item.imagepath.startsWith('http') ? item.imagepath : '/' + item.imagepath;
                     grid.innerHTML += `
                         <div class="corp-card reveal">
                             <div class="corp-img-wrapper">
                                 ${item.badgetext ? `<span class="corp-badge">${item.badgetext}</span>` : ''}
-                                <img src="${item.imagepath.startsWith('http') ? item.imagepath : '/' + item.imagepath}" alt="${item.title}" class="img-cover">
+                                <img src="${img}" alt="${item.title}" class="img-cover">
                                 <div class="corp-overlay">
-                                    <a href="contact.html?product=${encodeURIComponent(item.title)}" class="btn btn-primary" style="padding: 10px 20px;">Enquire Now</a>
+                                    <a href="/contact.html?product=${encodeURIComponent(item.title)}" class="btn btn-primary" style="padding: 10px 20px;">Enquire Now</a>
                                 </div>
                             </div>
                             <div class="corp-content">

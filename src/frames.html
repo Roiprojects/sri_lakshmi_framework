@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="/assets/favicon.png"><link rel="stylesheet" href="/styles.css">
 
     <style>
         /* ============================================
@@ -347,7 +347,7 @@
         }
         .product-badge.new { background: #4caf7d; color: #fff; }
     </style>
-    <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="/assets/favicon.png"><link rel="stylesheet" href="/styles.css">
     <script>document.documentElement.classList.add('js-enabled');</script>
 </head>
 <body>
@@ -475,7 +475,7 @@
         <a id="whatsapp-float" href="https://wa.me/918971488451" target="_blank" class="floating-btn whatsapp-float" aria-label="Contact us on WhatsApp" title="WhatsApp Us"><i class="fab fa-whatsapp"></i></a>
     </div>
 
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const container = document.getElementById('frames-container');
@@ -561,10 +561,12 @@
                                 </div>
                             </div>
                             <div class="frames-grid">
-                                ${frames.length > 0 ? frames.map(f => `
+                                ${frames.length > 0 ? frames.map(f => {
+                                    const img = f.imagepath.startsWith('http') ? f.imagepath : '/' + f.imagepath;
+                                    return `
                                     <div class="frame-card">
                                         <div class="frame-img-wrap">
-                                            <img src="${f.imagepath.startsWith('http') ? f.imagepath : '/' + f.imagepath}" alt="${f.title}">
+                                            <img src="${img}" alt="${f.title}">
                                             ${f.badgetext ? `<span class="frame-card-badge">${f.badgetext}</span>` : ''}
                                             <div class="frame-img-overlay">
                                                 <p>${f.description}</p>

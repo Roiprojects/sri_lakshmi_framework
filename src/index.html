@@ -15,7 +15,7 @@
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="/assets/favicon.png"><link rel="stylesheet" href="/styles.css">
     <script>document.documentElement.classList.add('js-enabled');</script>
 </head>
 <body>
@@ -400,7 +400,7 @@
         <a id="whatsapp-float" href="https://wa.me/918971488451" target="_blank" class="floating-btn whatsapp-float" aria-label="Contact us on WhatsApp" title="WhatsApp Us"><i class="fab fa-whatsapp"></i></a>
     </div>
 
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // 1. Fetch Home Gallery Preview (Top 6-12)
@@ -411,7 +411,7 @@
                 if (galData.length > 0) {
                     galGrid.innerHTML = '';
                     galData.slice(0, 12).forEach(item => {
-                        const img = item.imagepath.startsWith('http') ? item.imagepath : `/${item.imagepath}`;
+                        const img = item.imagepath.startsWith('http') ? item.imagepath : '/' + item.imagepath;
                         galGrid.innerHTML += `
                             <div class="gallery-preview-item aspect-4-3 reveal">
                                 <img src="${img}" alt="${item.title}" class="img-cover">

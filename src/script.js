@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 banners.forEach((banner, i) => {
                     const bannerImg = banner.imagepath || 'assets/placeholder.png';
-                    const img = bannerImg.startsWith('http') ? bannerImg : (bannerImg.startsWith('/') ? bannerImg : '/' + bannerImg);
+                    const img = bannerImg.startsWith('http') ? bannerImg : bannerImg;
                     
                     // Add Slide
                     const slide = document.createElement('div');

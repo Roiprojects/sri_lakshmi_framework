@@ -384,7 +384,7 @@
                 </button>
                 <h1 id="pageTitle">Gallery Management</h1>
             </div>
-            <a href="/" target="_blank" class="view-site"><i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> View Live Site</a>
+            <a href="index.html" target="_blank" class="view-site"><i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> View Live Site</a>
         </div>
 
         <div class="content-area">
@@ -658,7 +658,7 @@
         // Security Gate
         const token = localStorage.getItem('adminToken');
         if (!token) {
-            window.location.href = '/login';
+            window.location.href = 'login.html';
         } else {
             document.body.classList.remove('auth-checking');
             document.body.classList.add('auth-ready');
@@ -666,7 +666,7 @@
 
         function logout() {
             localStorage.removeItem('adminToken');
-            window.location.href = '/login';
+            window.location.href = 'login.html';
         }
 
         // Auth headers for Fetch

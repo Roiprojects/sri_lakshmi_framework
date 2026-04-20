@@ -112,7 +112,7 @@
     <script>
         // Check if already logged in
         if (localStorage.getItem('adminToken')) {
-            window.location.href = '/admin';
+            window.location.href = 'admin.html';
         }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -134,7 +134,7 @@
                 
                 if (data.success) {
                     localStorage.setItem('adminToken', data.token);
-                    window.location.href = '/admin';
+                    window.location.href = 'admin.html';
                 } else {
                     errorMsg.style.display = 'block';
                     btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';

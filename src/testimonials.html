@@ -130,7 +130,7 @@
                 const response = await fetch('/api/testimonials?public=true');
                 const testimonials = await response.json();
                 
-                if (testimonials.length === 0) {
+                if (!testimonials || !Array.isArray(testimonials) || testimonials.length === 0) {
                     track.innerHTML = '<p style="text-align:center;width:100%;">No testimonials yet.</p>';
                     return;
                 }
@@ -143,7 +143,7 @@
                     for(let i=0; i<fullStars; i++) stars[i] = '<i class="fas fa-star"></i>';
                     if (t.rating % 1 !== 0) stars[fullStars] = '<i class="fas fa-star-half-alt"></i>';
 
-                    const img = t.clientimage.startsWith('http') ? t.clientimage : '/' + t.clientimage;
+                    const img = (t.clientimage && t.clientimage.startsWith('http')) ? t.clientimage : (t.clientimage ? (t.clientimage.startsWith('/') ? t.clientimage : '/' + t.clientimage) : '/assets/placeholder.png');
                     return `
                         <div class="testimonial-card-themed">
                             <i class="fas fa-quote-right quote-icon"></i>

@@ -169,17 +169,6 @@
             </div>
         </section>
 
-        <!-- High-Impact CTA Section -->
-        <section class="cta-premium reveal">
-            <div class="container">
-                <h2>Ready to Elevate Your Brand?</h2>
-                <p>Contact our corporate specialists for customized samples, bulk pricing, and personalized gifting strategies.</p>
-                <div class="cta-group">
-                    <a href="contact.html" class="btn-gold"><i class="fas fa-paper-plane" style="margin-right: 10px;"></i> Get a Custom Quote</a>
-                    <a href="#" class="btn-white-outline dynamic-whatsapp-btn"><i class="fab fa-whatsapp" style="margin-right: 10px;"></i> Chat on WhatsApp</a>
-                </div>
-            </div>
-        </section>
     </main>
 
     <footer class="footer">
@@ -239,7 +228,7 @@
                 const response = await fetch('/api/corporate_gifts?public=true');
                 const products = await response.json();
                 
-                if (products.length === 0) {
+                if (!products || !Array.isArray(products) || products.length === 0) {
                     grid.innerHTML = '<p style="text-align:center;width:100%;padding:40px;color:#94a3b8;">Corporate collection coming soon. Please contact us for custom requests.</p>';
                     return;
                 }
@@ -247,7 +236,7 @@
                 grid.innerHTML = ''; // Clear spinner
 
                 products.forEach(item => {
-                    const img = item.imagepath.startsWith('http') ? item.imagepath : '/' + item.imagepath;
+                    const img = (item.imagepath && item.imagepath.startsWith('http')) ? item.imagepath : (item.imagepath ? '/' + item.imagepath : '/assets/placeholder.png');
                     grid.innerHTML += `
                         <div class="corp-card reveal">
                             <div class="corp-img-wrapper">

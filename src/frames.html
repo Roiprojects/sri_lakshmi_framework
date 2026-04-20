@@ -477,35 +477,37 @@
 
     <script src="/script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+        (async function() {
             const container = document.getElementById('frames-container');
-            const whatsappNumber = "918971488451"; // Default fallback
+            const whatsappNumber = "918971488451";
+            if (!container) return;
 
-            // Fetch Data
+            // Immediate clearing to replace original spinner
+            container.innerHTML = '<div style="text-align:center; padding:100px; color:#94a3b8;"><p><i class="fas fa-sync fa-spin"></i> Synchronizing collections...</p></div>';
+
             try {
+                // Parallel fetch
+                const [frameRes, catRes] = await Promise.all([
+                    fetch('/api/frames?public=true').catch(e => ({ ok: false, error: e })),
+                    fetch('/api/categories').catch(e => ({ ok: false, error: e }))
+                ]);
+
                 let data = [];
                 let allCategories = [];
 
-                try {
-                    const frameRes = await fetch('/api/frames?public=true');
-                    if (frameRes.ok) data = await frameRes.json();
-                } catch (e) { console.error('Frames Fetch Error:', e); }
-
-                try {
-                    const catRes = await fetch('/api/categories');
-                    if (catRes.ok) allCategories = await catRes.json();
-                } catch (e) { console.error('Categories Fetch Error:', e); }
+                if (frameRes.ok) data = await frameRes.json();
+                if (catRes.ok) allCategories = await catRes.json();
                 
-                const framesCategories = allCategories.filter(c => c.type === 'frame');
-
+                const framesCategories = Array.isArray(allCategories) ? allCategories.filter(c => c.type === 'frame') : [];
+                
+                // CRITICAL: Final clear before render
                 container.innerHTML = '';
 
-                if (data.length === 0) {
+                if (!data || !Array.isArray(data) || data.length === 0) {
                     container.innerHTML = '<div style="text-align:center; padding:100px; color:#94a3b8;"><p>Collections arriving soon!</p></div>';
-                    // Do not return here, we still want to render the empty category sections!
+                    return;
                 }
 
-                // Group frames by category
                 const managedCats = {};
                 framesCategories.forEach((c, idx) => {
                     managedCats[c.name] = { 
@@ -521,10 +523,9 @@
                     return acc;
                 }, {});
 
-                // Iterate through all categories actually present in the database
+                // If categories from API were missing/blocked, infer them from data
                 const allCategoryIds = [...new Set([...Object.keys(managedCats), ...Object.keys(grouped)])];
                 
-                // Add this generation for filter tabs dynamically:
                 const filterInner = document.getElementById('framesFilterInner');
                 if (filterInner) {
                     filterInner.innerHTML = '';
@@ -539,8 +540,7 @@
                 }
 
                 allCategoryIds.forEach(catId => {
-                    const frames = grouped[catId] || [];
-
+                    const framesResult = grouped[catId] || [];
                     const catData = managedCats[catId] || {
                         title: catId.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
                         num: '??',
@@ -561,33 +561,31 @@
                                 </div>
                             </div>
                             <div class="frames-grid">
-                                ${frames.length > 0 ? frames.map(f => {
-                                    const img = f.imagepath.startsWith('http') ? f.imagepath : '/' + f.imagepath;
+                                ${framesResult.length > 0 ? framesResult.map(f => {
+                                    const img = (f.imagepath && f.imagepath.startsWith('http')) ? f.imagepath : (f.imagepath ? '/' + f.imagepath : '/assets/placeholder.png');
+                                    const desc = f.description || 'Premium quality frame';
                                     return `
                                     <div class="frame-card">
                                         <div class="frame-img-wrap">
-                                            <img src="${img}" alt="${f.title}">
+                                            <img src="${img}" alt="${f.title}" onerror="this.src='/assets/placeholder.png'">
                                             ${f.badgetext ? `<span class="frame-card-badge">${f.badgetext}</span>` : ''}
                                             <div class="frame-img-overlay">
-                                                <p>${f.description}</p>
+                                                <p>${desc}</p>
                                                 <a href="https://wa.me/${whatsappNumber}?text=Hi, I'm interested in the ${f.title}" target="_blank" class="overlay-enquire">Enquire on WhatsApp</a>
                                             </div>
                                         </div>
                                         <div class="frame-card-body">
                                             <h3>${f.title}</h3>
-                                            <p>${f.description.substring(0, 80)}${f.description.length > 80 ? '...' : ''}</p>
+                                            <p>${desc.substring(0, 80)}${desc.length > 80 ? '...' : ''}</p>
                                             <a href="https://wa.me/${whatsappNumber}?text=Hi, I'm interested in the ${f.title}" target="_blank" class="frame-enquire-link">View Pricing Details <i class="fas fa-arrow-right"></i></a>
                                         </div>
-                                    </div>
-                                `).join('') : '<p style="grid-column:1/-1; color:#94a3b8; padding: 20px 0;">New collections coming soon!</p>'}
+                                    </div>`;
+                                }).join('') : '<p style="grid-column:1/-1; color:#94a3b8; padding: 20px 0;">New collections coming soon!</p>'}
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                     container.appendChild(catSection);
                 });
 
-                // Observe new elements
-                const newCategories = document.querySelectorAll('.frame-category');
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -598,12 +596,13 @@
                         }
                     });
                 }, { rootMargin: '-30% 0px -60% 0px' });
-                newCategories.forEach(cat => observer.observe(cat));
+                document.querySelectorAll('.frame-category').forEach(cat => observer.observe(cat));
 
             } catch (e) {
-                container.innerHTML = '<div style="text-align:center; padding:100px; color:red;"><p>Unable to load collections.</p></div>';
+                console.error('Critical render error:', e);
+                container.innerHTML = '<div style="text-align:center; padding:100px; color:red;"><p>Unable to load collections at this time. Please refresh the page.</p></div>';
             }
-        });
+        })();
     </script>
 </body>
 </html>

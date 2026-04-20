@@ -100,8 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
-        navbar.classList.toggle('scrolled', window.scrollY > 50);
-        scrollToTopBtn.classList.toggle('visible', window.scrollY > 400);
+        const scrollToTopBtn = document.getElementById('scroll-to-top');
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+        if (scrollToTopBtn) scrollToTopBtn.classList.toggle('visible', window.scrollY > 400);
     });
 
     // ============================================
@@ -255,7 +256,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/hero_banners?public=true');
             const banners = await res.json();
 
-            if (banners && banners.length > 0) {
+            // Defensive Check
+            if (banners && Array.isArray(banners) && banners.length > 0) {
                 // Remove existing slides except controls
                 const existingSlides = heroSection.querySelectorAll('.slide');
                 existingSlides.forEach(s => s.remove());
@@ -264,7 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dotsContainer) dotsContainer.innerHTML = '';
 
                 banners.forEach((banner, i) => {
-                    const img = banner.imagepath.startsWith('http') ? banner.imagepath : '/' + banner.imagepath;
+                    const bannerImg = banner.imagepath || 'assets/placeholder.png';
+                    const img = bannerImg.startsWith('http') ? bannerImg : (bannerImg.startsWith('/') ? bannerImg : '/' + bannerImg);
                     
                     // Add Slide
                     const slide = document.createElement('div');
@@ -273,8 +276,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     slide.innerHTML = `
                         <div class="slide-overlay"></div>
                         <div class="slide-content">
-                            <h1>${banner.title}</h1>
-                            <p>${banner.subtitle}</p>
+                            <h1>${banner.title || 'Sri Lakshmi Studio'}</h1>
+                            <p>${banner.subtitle || 'Premium Framing & Gifting'}</p>
                             <div class="hero-buttons">
                                 <a href="contact.html" class="btn btn-primary">Contact Us</a>
                             </div>
@@ -292,6 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
+                initHeroSlider();
+            } else {
+                console.log('No banners found or invalid format, using defaults.');
                 initHeroSlider();
             }
         } catch (err) {
@@ -427,20 +433,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/settings');
             const settings = await res.json();
             
-            if (settings.phone) {
-                // Update text displays
-                document.querySelectorAll('.dynamic-phone-text').forEach(el => el.textContent = settings.phone);
-                // Update tel links
-                const cleanPhone = settings.phone.replace(/\D/g, '');
-                document.querySelectorAll('a[href^="tel:"]').forEach(el => el.href = `tel:${cleanPhone}`);
-            }
-            
-            if (settings.whatsapp) {
-                const cleanWA = settings.whatsapp.replace(/\D/g, '');
-                // Update all WhatsApp links
-                document.querySelectorAll('a[href*="wa.me"]').forEach(el => {
-                    el.href = `https://wa.me/${cleanWA}`;
-                });
+            if (settings && typeof settings === 'object') {
+                if (settings.phone) {
+                    // Update text displays
+                    document.querySelectorAll('.dynamic-phone-text').forEach(el => el.textContent = settings.phone);
+                    // Update tel links
+                    const cleanPhone = settings.phone.replace(/\D/g, '');
+                    document.querySelectorAll('a[href^="tel:"]').forEach(el => {
+                        if (!el.href.includes('wa.me')) el.href = `tel:${cleanPhone}`;
+                    });
+                }
+                
+                if (settings.whatsapp) {
+                    const cleanWA = settings.whatsapp.replace(/\D/g, '');
+                    // Update all WhatsApp links
+                    document.querySelectorAll('a[href*="wa.me"]').forEach(el => {
+                        el.href = `https://wa.me/${cleanWA}`;
+                    });
+                }
+
+                if (settings.email) {
+                    document.querySelectorAll('.dynamic-email-text').forEach(el => el.textContent = settings.email);
+                    document.querySelectorAll('a[href^="mailto:"]').forEach(el => el.href = `mailto:${settings.email}`);
+                }
             }
         } catch (err) {
             console.error('Failed to load site settings:', err);

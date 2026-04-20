@@ -533,8 +533,9 @@
 
                     grid.innerHTML = '';
 
-                    if (data.length === 0) {
+                    if (!data || !Array.isArray(data) || data.length === 0) {
                         grid.innerHTML = '<p style="grid-column:1/-1; text-align:center;">No gallery items found yet.</p>';
+                        if (!data || !Array.isArray(data)) data = [];
                     }
 
                     // Generate Dynamic Filter Buttons unconditionally
@@ -586,7 +587,7 @@
                         card.className = 'gallery-card reveal';
                         card.dataset.category = item.category || 'other';
                         card.dataset.title = item.title;
-                        const imgPath = item.imagepath.startsWith('http') ? item.imagepath : '/' + item.imagepath;
+                        const imgPath = (item.imagepath && item.imagepath.startsWith('http')) ? item.imagepath : (item.imagepath ? '/' + item.imagepath : '/assets/placeholder.png');
 
                         card.innerHTML = `
                             <span class="gallery-card-category">${formatCategoryName(item.category)}</span>

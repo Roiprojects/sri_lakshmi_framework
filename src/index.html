@@ -408,7 +408,7 @@
                 const galRes = await fetch('/api/home-gallery?public=true');
                 const galData = await galRes.json();
                 const galGrid = document.getElementById('gallery-preview-grid');
-                if (galData.length > 0) {
+                if (galData && Array.isArray(galData) && galData.length > 0) {
                     galGrid.innerHTML = '';
                     galData.slice(0, 12).forEach(item => {
                         const img = item.imagepath.startsWith('http') ? item.imagepath : '/' + item.imagepath;
@@ -430,13 +430,13 @@
                 const testData = await testRes.json();
                 const track = document.getElementById('testimonialsTrack');
                 
-                if (testData.length > 0) {
+                if (testData && Array.isArray(testData) && testData.length > 0) {
                     track.innerHTML = '';
                     const renderCard = (t) => {
                         const stars = Array(5).fill('<i class="far fa-star"></i>');
                         const full = Math.floor(t.rating);
                         for(let i=0; i<full; i++) stars[i] = '<i class="fas fa-star"></i>';
-                        const img = t.clientimage.startsWith('http') ? t.clientimage : `/${t.clientimage}`;
+                        const img = t.clientimage.startsWith('http') ? t.clientimage : (t.clientimage.startsWith('/') ? t.clientimage : `/${t.clientimage}`);
                         return `
                             <div class="testimonial-card-themed">
                                 <i class="fas fa-quote-right quote-icon"></i>

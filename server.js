@@ -21,9 +21,13 @@ if (supabaseUrl && supabaseKey) {
   console.warn('⚠️ Supabase URL or Key is missing.');
 }
 
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'src'), { extensions: ['html'] }));
 
 // Setup Multer for Memory Storage (Cloud Uploads)
 const storage = multer.memoryStorage();
@@ -34,13 +38,18 @@ let AUTH_TOKEN = 'token_' + Buffer.from(CURRENT_PASSWORD).toString('base64'); //
 
 // Load password from Supabase settings once connected
 if (supabaseUrl && supabaseKey) {
-  supabase.from('settings').select('value').eq('id', 'admin_password').single().then(({ data, error }) => {
-    if (!error && data && data.value) {
-      CURRENT_PASSWORD = data.value;
-      AUTH_TOKEN = 'token_' + Buffer.from(CURRENT_PASSWORD).toString('base64');
-      console.log('✅ Admin password syncing from Supabase complete');
-    }
-  });
+  // Use a catch to prevent crash if Supabase is unreachable at startup
+  supabase.from('settings').select('value').eq('id', 'admin_password').single()
+    .then(({ data, error }) => {
+      if (!error && data && data.value) {
+        CURRENT_PASSWORD = data.value;
+        AUTH_TOKEN = 'token_' + Buffer.from(CURRENT_PASSWORD).toString('base64');
+        console.log('✅ Admin password syncing from Supabase complete');
+      }
+    })
+    .catch(err => {
+      console.warn('⚠️ Could not sync admin password from Supabase:', err.message);
+    });
 }
 
 app.post('/api/login', async (req, res) => {
@@ -96,7 +105,7 @@ const tableSchemas = {
   gallery: ['title', 'category', 'description', 'imagepath', 'is_visible', 'section'],
   frames: ['title', 'category', 'badgetext', 'description', 'imagepath', 'is_visible', 'section'],
   corporate_gifts: ['title', 'badgetext', 'description', 'imagepath', 'is_visible', 'section'],
-  testimonials: ['clientname', 'rating', 'quote', 'clientimage', 'is_visible'],
+  testimonials: ['clientname', 'rating', 'quote', 'clientimage', 'is_visible', 'section'],
   categories: ['name', 'type'],
   hero_banners: ['title', 'subtitle', 'imagepath', 'is_visible', 'section'],
   home_gallery: ['title', 'category', 'description', 'imagepath', 'is_visible', 'section'],
@@ -221,13 +230,31 @@ tables.forEach(table => {
     }
 
     app.get(route, async (req, res) => {
-      let query = supabase.from(dbTable).select('*');
-      if (req.query.public === 'true') query = query.eq('is_visible', true);
-      if (sectionFilter) query = query.eq('section', sectionFilter);
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
-      if (error) return res.status(500).json({ error: error.message });
-      res.json(data);
+      try {
+        let query = supabase.from(dbTable).select('*');
+        if (req.query.public === 'true') query = query.eq('is_visible', true);
+        
+        // Content Sync Logic: Frames can show Gallery content too
+        if (sectionFilter === 'frames') {
+          const frameCompatibleGalleryCats = ['passport', 'acrylic', 'collage', 'certificate', 'badges'];
+          const orFilter = `section.eq.frames,and(section.eq.gallery,category.in.(${frameCompatibleGalleryCats.join(',')}))`;
+          query = query.or(orFilter);
+        } else if (sectionFilter) {
+          query = query.eq('section', sectionFilter);
+        }
+        
+        const { data, error } = await query.order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error(`❌ Supabase Error for ${route} (${dbTable}):`, error.message);
+          return res.status(500).json({ error: error.message, details: error });
+        }
+        
+        res.json(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(`❌ Critical API Error for ${route}:`, err.message);
+        res.status(500).json({ error: 'Internal Server Error', message: err.message });
+      }
     });
     
     // Protected Routes
@@ -311,6 +338,14 @@ app.post('/api/migrate-data', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Settings specific endpoints
+app.get('/api/settings', handleGetSettings);
+app.put('/api/settings/:id', requireAuth, handlePutSetting);
+app.post('/api/settings', requireAuth, handlePutSetting); // Allow POST as alias for update
+
+// Static files served AFTER API routes to prevent hanging/interference
+app.use(express.static(path.join(__dirname, 'src'), { extensions: ['html'] }));
 
 // Main Page Routes for Clean URLs
 app.get('/', (req, res) => {

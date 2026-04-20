@@ -9,9 +9,9 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Supabase Connection (Hardcoded for Zero-Config Deployment)
-const supabaseUrl = 'https://ytajatxcbryruoqxkldb.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0YWphdHhjYnJ5cnVvcXhrbGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMjAzNjcsImV4cCI6MjA5MDY5NjM2N30.mCJHKI8ixpzZRvWGo0bKUz8Q_b6GjTX_SEIKYtPnw7o';
+// Supabase Connection (Configured via Environment Variables)
+const supabaseUrl = process.env.SUPABASE_URL || 'https://ytajatxcbryruoqxkldb.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY;
 
 let supabase = null;
 if (supabaseUrl && supabaseKey) {
@@ -33,8 +33,8 @@ app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-let CURRENT_PASSWORD = 'LakshmiAdmin2026';
-let AUTH_TOKEN = 'token_' + Buffer.from(CURRENT_PASSWORD).toString('base64'); // Simple secure token
+let CURRENT_PASSWORD = process.env.ADMIN_PASSWORD || 'LakshmiAdmin2026';
+let AUTH_TOKEN = 'token_' + Buffer.from(CURRENT_PASSWORD).toString('base64');
 
 // Load password from Supabase settings once connected
 if (supabaseUrl && supabaseKey) {
@@ -345,7 +345,8 @@ app.put('/api/settings/:id', requireAuth, handlePutSetting);
 app.post('/api/settings', requireAuth, handlePutSetting); // Allow POST as alias for update
 
 // Static files served AFTER API routes to prevent hanging/interference
-app.use(express.static(path.join(__dirname, 'src'), { extensions: ['html'] }));
+const srcPath = path.resolve(__dirname, 'src');
+app.use(express.static(srcPath, { extensions: ['html'] }));
 
 // Main Page Routes for Clean URLs
 app.get('/', (req, res) => {

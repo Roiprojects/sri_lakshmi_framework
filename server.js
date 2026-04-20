@@ -26,7 +26,17 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl) or null (local file:// protocol)
+    if (!origin || origin === 'null') {
+      callback(null, true);
+    } else {
+      callback(null, true); // For development, allow all origins
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Setup Multer for Memory Storage (Cloud Uploads)

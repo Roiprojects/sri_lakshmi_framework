@@ -6,6 +6,7 @@
     <title>Lakshmi Frameworks | Premium Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="config.js"></script>
     <style>
         :root {
             --primary: #0B1B36;
@@ -658,15 +659,21 @@
         // Security Gate
         const token = localStorage.getItem('adminToken');
         if (!token) {
-            window.location.href = 'login.html';
+            window.location.href = window.APP_CONFIG.getPageUrl('login');
         } else {
             document.body.classList.remove('auth-checking');
             document.body.classList.add('auth-ready');
+            
+            // Fix View Live Site link for clean URLs
+            const viewSiteLink = document.querySelector('.view-site');
+            if (viewSiteLink) {
+                viewSiteLink.href = window.APP_CONFIG.getPageUrl('index');
+            }
         }
 
         function logout() {
             localStorage.removeItem('adminToken');
-            window.location.href = 'login.html';
+            window.location.href = window.APP_CONFIG.getPageUrl('login');
         }
 
         // Auth headers for Fetch
@@ -704,7 +711,7 @@
 
         async function loadSettings() {
             try {
-                const res = await fetch('/api/settings');
+                const res = await fetch(window.APP_CONFIG.getApiUrl('/api/settings'));
                 const data = await res.json();
                 document.getElementById('phoneInput').value = data.phone || '';
                 document.getElementById('whatsappInput').value = data.whatsapp || '';
@@ -733,10 +740,14 @@
         });
 
         const endpoints = {
-            'gallery': '/api/gallery', 'frames': '/api/frames',
-            'testimonials': '/api/testimonials', 'corporate_gifts': '/api/corporate_gifts',
-            'categories': '/api/categories', 'hero_banners': '/api/hero_banners',
-            'home_gallery': '/api/home-gallery', 'about': '/api/about'
+            'gallery': window.APP_CONFIG.getApiUrl('/api/gallery'), 
+            'frames': window.APP_CONFIG.getApiUrl('/api/frames'),
+            'testimonials': window.APP_CONFIG.getApiUrl('/api/testimonials'), 
+            'corporate_gifts': window.APP_CONFIG.getApiUrl('/api/corporate_gifts'),
+            'categories': window.APP_CONFIG.getApiUrl('/api/categories'), 
+            'hero_banners': window.APP_CONFIG.getApiUrl('/api/hero_banners'),
+            'home_gallery': window.APP_CONFIG.getApiUrl('/api/home-gallery'), 
+            'about': window.APP_CONFIG.getApiUrl('/api/about')
         };
 
         // Render Data
@@ -761,7 +772,7 @@
                     el.className = 'data-item';
 
                     const imgPath = item.imagepath || item.clientimage || 'assets/placeholder.jpg';
-                    const img = imgPath.startsWith('http') ? imgPath : '/' + imgPath;
+                    const img = window.APP_CONFIG.getAssetUrl(imgPath);
                     const title = item.title || item.clientname || item.name || 'Untitled';
                     const desc = item.description || item.quote || item.subtitle || '';
                     const badge = item.category || item.badgetext || (item.rating ? item.rating + ' Stars' : null);
@@ -797,7 +808,7 @@
         // Category Management Functions
         async function fetchCategories() {
             try {
-                const res = await fetch('/api/categories');
+                const res = await fetch(window.APP_CONFIG.getApiUrl('/api/categories'));
                 const categories = await res.json();
                 
                 const galCats = categories.filter(c => c.type === 'gallery');
@@ -1105,11 +1116,11 @@
                 const phone = document.getElementById('phoneInput').value;
                 const whatsapp = document.getElementById('whatsappInput').value;
                 
-                await fetch('/api/settings', {
+                await fetch(window.APP_CONFIG.getApiUrl('/api/settings'), {
                     method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders },
                     body: JSON.stringify({ id: 'phone', value: phone })
                 });
-                await fetch('/api/settings', {
+                await fetch(window.APP_CONFIG.getApiUrl('/api/settings'), {
                     method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders },
                     body: JSON.stringify({ id: 'whatsapp', value: whatsapp })
                 });

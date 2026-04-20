@@ -109,10 +109,11 @@
         </form>
     </div>
 
+    <script src="config.js"></script>
     <script>
         // Check if already logged in
         if (localStorage.getItem('adminToken')) {
-            window.location.href = 'admin.html';
+            window.location.href = window.APP_CONFIG.getPageUrl('admin');
         }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -125,7 +126,7 @@
             errorMsg.style.display = 'none';
             
             try {
-                const res = await fetch('/api/login', {
+                const res = await fetch(window.APP_CONFIG.getApiUrl('/api/login'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password })
@@ -134,7 +135,7 @@
                 
                 if (data.success) {
                     localStorage.setItem('adminToken', data.token);
-                    window.location.href = 'admin.html';
+                    window.location.href = window.APP_CONFIG.getPageUrl('admin');
                 } else {
                     errorMsg.style.display = 'block';
                     btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';

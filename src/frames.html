@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
 
     <style>
         /* ============================================
@@ -501,8 +502,8 @@
                 try {
                     // Parallel fetch
                     const [frameRes, catRes] = await Promise.all([
-                        fetch('/api/frames?public=true').catch(e => ({ ok: false, error: e })),
-                        fetch('/api/categories').catch(e => ({ ok: false, error: e }))
+                        fetch(window.APP_CONFIG.getApiUrl('/api/frames?public=true')).catch(e => ({ ok: false, error: e })),
+                        fetch(window.APP_CONFIG.getApiUrl('/api/categories')).catch(e => ({ ok: false, error: e }))
                     ]);
 
                     if (frameRes.ok) data = await frameRes.json();
@@ -582,7 +583,7 @@
                             </div>
                             <div class="frames-grid">
                                 ${framesResult.length > 0 ? framesResult.map(f => {
-                                    const img = (f.imagepath && f.imagepath.startsWith('http')) ? f.imagepath : (f.imagepath ? f.imagepath.replace(/^\//, '') : 'assets/placeholder.png');
+                                    const img = window.APP_CONFIG.getAssetUrl(f.imagepath);
                                     const desc = f.description || 'Premium quality frame';
                                     return `
                                     <div class="frame-card">

@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
     <style>
         /* Testimonials Page Specific Header */
         .page-header {
@@ -134,7 +135,7 @@
             ];
 
             try {
-                const response = await fetch('/api/testimonials?public=true');
+                const response = await fetch(window.APP_CONFIG.getApiUrl('/api/testimonials?public=true'));
                 let testimonials = [];
                 if (response.ok) {
                     testimonials = await response.json();
@@ -154,7 +155,7 @@
                     for(let i=0; i<fullStars; i++) stars[i] = '<i class="fas fa-star"></i>';
                     if (t.rating % 1 !== 0) stars[fullStars] = '<i class="fas fa-star-half-alt"></i>';
 
-                    const img = (t.clientimage && t.clientimage.startsWith('http')) ? t.clientimage : (t.clientimage ? t.clientimage.replace(/^\//, '') : 'assets/placeholder.png');
+                    const img = window.APP_CONFIG.getAssetUrl(t.clientimage);
                     return `
                         <div class="testimonial-card-themed">
                             <i class="fas fa-quote-right quote-icon"></i>

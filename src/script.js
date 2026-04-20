@@ -1,4 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Automatic Navigation Link Cleaning for Clean URLs
+    if (window.location.protocol !== 'file:' && window.APP_CONFIG) {
+        document.querySelectorAll('a[href$=".html"]').forEach(link => {
+            const originalHref = link.getAttribute('href');
+            // Don't modify external links or anchor links
+            if (originalHref && !originalHref.startsWith('http') && !originalHref.startsWith('#')) {
+                link.href = window.APP_CONFIG.getPageUrl(originalHref.replace('.html', ''));
+            }
+        });
+    }
 
     // ============================================
     // Animated Counter for Stats Bar
@@ -253,7 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!heroSection) return;
 
         try {
-            const res = await fetch('/api/hero_banners?public=true');
+            const url = window.APP_CONFIG ? window.APP_CONFIG.getApiUrl('/api/hero_banners?public=true') : '/api/hero_banners?public=true';
+            const res = await fetch(url);
             const banners = await res.json();
 
             // Defensive Check
@@ -267,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 banners.forEach((banner, i) => {
                     const bannerImg = banner.imagepath || 'assets/placeholder.png';
-                    const img = bannerImg.startsWith('http') ? bannerImg : bannerImg;
+                    const img = window.APP_CONFIG.getAssetUrl(bannerImg);
                     
                     // Add Slide
                     const slide = document.createElement('div');
@@ -430,7 +441,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     const fetchSiteSettings = async () => {
         try {
-            const res = await fetch('/api/settings');
+            const url = window.APP_CONFIG ? window.APP_CONFIG.getApiUrl('/api/settings') : '/api/settings';
+            const res = await fetch(url);
             const settings = await res.json();
             
             if (settings && typeof settings === 'object') {

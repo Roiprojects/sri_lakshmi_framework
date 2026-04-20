@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
     <style>
         .gallery-masonry {
             display: grid;
@@ -533,7 +534,7 @@
                     ];
 
                     try {
-                        const galRes = await fetch('/api/gallery?public=true');
+                        const galRes = await fetch(window.APP_CONFIG.getApiUrl('/api/gallery?public=true'));
                         if (galRes.ok) data = await galRes.json();
                         else throw new Error('API down');
                     } catch (e) { 
@@ -542,7 +543,7 @@
                     }
 
                     try {
-                        const catRes = await fetch('/api/categories');
+                        const catRes = await fetch(window.APP_CONFIG.getApiUrl('/api/categories'));
                         if (catRes.ok) allCategories = await catRes.json();
                         else throw new Error('API down');
                     } catch (e) { 
@@ -606,7 +607,7 @@
                         card.className = 'gallery-card reveal visible';
                         card.dataset.category = item.category || 'other';
                         card.dataset.title = item.title;
-                        const imgPath = (item.imagepath && item.imagepath.startsWith('http')) ? item.imagepath : (item.imagepath ? item.imagepath.replace(/^\//, '') : 'assets/placeholder.png');
+                        const imgPath = window.APP_CONFIG.getAssetUrl(item.imagepath);
 
                         card.innerHTML = `
                             <span class="gallery-card-category">${formatCategoryName(item.category)}</span>

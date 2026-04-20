@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
     <script>document.documentElement.classList.add('js-enabled');</script>
 </head>
 <body>
@@ -405,7 +406,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             // 1. Fetch Home Gallery Preview (Top 6-12)
             try {
-                const galRes = await fetch('/api/home-gallery?public=true');
+                const galRes = await fetch(window.APP_CONFIG.getApiUrl('/api/home-gallery?public=true'));
                 const galData = await galRes.json();
                 const galGrid = document.getElementById('gallery-preview-grid');
                 
@@ -413,7 +414,7 @@
                     if (data && Array.isArray(data) && data.length > 0) {
                         galGrid.innerHTML = '';
                         data.slice(0, 12).forEach(item => {
-                            const img = item.imagepath.startsWith('http') ? item.imagepath : item.imagepath.replace(/^\//, '');
+                            const img = window.APP_CONFIG.getAssetUrl(item.imagepath);
                             galGrid.innerHTML += `
                                 <div class="gallery-preview-item aspect-4-3 reveal">
                                     <img src="${img}" alt="${item.title}" class="img-cover">
@@ -452,7 +453,7 @@
 
             // 2. Fetch Testimonials
             try {
-                const testRes = await fetch('/api/testimonials?public=true');
+                const testRes = await fetch(window.APP_CONFIG.getApiUrl('/api/testimonials?public=true'));
                 const testData = await testRes.json();
                 const track = document.getElementById('testimonialsTrack');
                 
@@ -463,7 +464,7 @@
                             const stars = Array(5).fill('<i class="far fa-star"></i>');
                             const full = Math.floor(t.rating);
                             for(let i=0; i<full; i++) stars[i] = '<i class="fas fa-star"></i>';
-                            const img = t.clientimage.startsWith('http') ? t.clientimage : t.clientimage.replace(/^\//, '');
+                            const img = window.APP_CONFIG.getAssetUrl(t.clientimage);
                             return `
                                 <div class="testimonial-card-themed">
                                     <i class="fas fa-quote-right quote-icon"></i>

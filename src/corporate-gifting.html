@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="assets/favicon.png"><link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
     <script>document.documentElement.classList.add('js-enabled');</script>
 </head>
 <body>
@@ -231,7 +232,7 @@
             ];
 
             try {
-                const response = await fetch('/api/corporate_gifts?public=true');
+                const response = await fetch(window.APP_CONFIG.getApiUrl('/api/corporate_gifts?public=true'));
                 let products = [];
                 if (response.ok) {
                     products = await response.json();
@@ -246,7 +247,7 @@
                 grid.innerHTML = ''; // Clear spinner
 
                 products.forEach(item => {
-                    const img = (item.imagepath && item.imagepath.startsWith('http')) ? item.imagepath : (item.imagepath ? item.imagepath.replace(/^\//, '') : 'assets/placeholder.png');
+                    const img = window.APP_CONFIG.getAssetUrl(item.imagepath);
                     grid.innerHTML += `
                         <div class="corp-card reveal visible">
                             <div class="corp-img-wrapper">

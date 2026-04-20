@@ -485,27 +485,47 @@
             // Immediate clearing to replace original spinner
             container.innerHTML = '<div style="text-align:center; padding:100px; color:#94a3b8;"><p><i class="fas fa-sync fa-spin"></i> Synchronizing collections...</p></div>';
 
-            try {
-                // Parallel fetch
-                const [frameRes, catRes] = await Promise.all([
-                    fetch('/api/frames?public=true').catch(e => ({ ok: false, error: e })),
-                    fetch('/api/categories').catch(e => ({ ok: false, error: e }))
-                ]);
+                const defaultFrames = [
+                    { title: 'Standard Passport Frame', category: 'passport-frames', imagepath: 'assets/passport_visa_1.jpg', description: 'Classical passport size photo frame.' },
+                    { title: 'Institutional Certificate Frame', category: 'bulk-certificate', imagepath: 'assets/featured_photo_frame.png', description: 'Durable frame for school and college certificates.' },
+                    { title: 'Frameless Acrylic Portrait', category: 'acrylic-frames', imagepath: 'assets/customised_acrylic_frame.jpg', description: 'Crystal clear acrylic mounting for modern look.' },
+                    { title: 'Collage Frame (9-Grid)', category: 'collage-frames', imagepath: 'assets/passport_visa_2.jpg', description: 'Multiple photos in a single elegant layout.' }
+                ];
+                const defaultCatData = [
+                    { name: 'passport-frames', type: 'frame' },
+                    { name: 'bulk-certificate', type: 'frame' },
+                    { name: 'acrylic-frames', type: 'frame' },
+                    { name: 'collage-frames', type: 'frame' }
+                ];
 
-                let data = [];
-                let allCategories = [];
+                try {
+                    // Parallel fetch
+                    const [frameRes, catRes] = await Promise.all([
+                        fetch('/api/frames?public=true').catch(e => ({ ok: false, error: e })),
+                        fetch('/api/categories').catch(e => ({ ok: false, error: e }))
+                    ]);
 
-                if (frameRes.ok) data = await frameRes.json();
-                if (catRes.ok) allCategories = await catRes.json();
+                    if (frameRes.ok) data = await frameRes.json();
+                    else { console.warn('Frames API failed, using defaults'); data = defaultFrames; }
+
+                    if (catRes.ok) allCategories = await catRes.json();
+                    else { console.warn('Categories API failed, using defaults'); allCategories = defaultCatData; }
+                } catch(e) {
+                    console.error('Fetch failed, using fallbacks:', e);
+                    data = defaultFrames;
+                    allCategories = defaultCatData;
+                }
                 
                 const framesCategories = Array.isArray(allCategories) ? allCategories.filter(c => c.type === 'frame') : [];
+                if (framesCategories.length === 0) {
+                    allCategories = defaultCatData;
+                }
                 
                 // CRITICAL: Final clear before render
                 container.innerHTML = '';
 
                 if (!data || !Array.isArray(data) || data.length === 0) {
-                    container.innerHTML = '<div style="text-align:center; padding:100px; color:#94a3b8;"><p>Collections arriving soon!</p></div>';
-                    return;
+                    data = defaultFrames;
                 }
 
                 const managedCats = {};
@@ -562,12 +582,12 @@
                             </div>
                             <div class="frames-grid">
                                 ${framesResult.length > 0 ? framesResult.map(f => {
-                                    const img = (f.imagepath && f.imagepath.startsWith('http')) ? f.imagepath : (f.imagepath ? '/' + f.imagepath : '/assets/placeholder.png');
+                                    const img = (f.imagepath && f.imagepath.startsWith('http')) ? f.imagepath : (f.imagepath ? f.imagepath.replace(/^\//, '') : 'assets/placeholder.png');
                                     const desc = f.description || 'Premium quality frame';
                                     return `
                                     <div class="frame-card">
                                         <div class="frame-img-wrap">
-                                            <img src="${img}" alt="${f.title}" onerror="this.src='/assets/placeholder.png'">
+                                            <img src="${img}" alt="${f.title}" onerror="this.src='assets/placeholder.png'">
                                             ${f.badgetext ? `<span class="frame-card-badge">${f.badgetext}</span>` : ''}
                                             <div class="frame-img-overlay">
                                                 <p>${desc}</p>

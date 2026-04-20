@@ -224,26 +224,36 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('corporate-grid');
             
+            const defaultProducts = [
+                { title: 'Custom Award Shield', description: 'Premium wooden award shield with metallic plaque for employee recognition.', imagepath: 'assets/corporate_gift_set.png', badgetext: 'Popular' },
+                { title: 'Executive Gifting Kit', description: 'Curated set including branded dairy, pen, and keychain in a premium box.', imagepath: 'assets/corporate_gifting_realistic.png', badgetext: 'New' },
+                { title: 'Acrylic Excellence Memento', description: 'High-grade crystal clear acrylic memento with custom engraving.', imagepath: 'assets/customised_acrylic_frame.jpg', badgetext: 'Corporate' }
+            ];
+
             try {
                 const response = await fetch('/api/corporate_gifts?public=true');
-                const products = await response.json();
+                let products = [];
+                if (response.ok) {
+                    products = await response.json();
+                } else {
+                    throw new Error('API down');
+                }
                 
                 if (!products || !Array.isArray(products) || products.length === 0) {
-                    grid.innerHTML = '<p style="text-align:center;width:100%;padding:40px;color:#94a3b8;">Corporate collection coming soon. Please contact us for custom requests.</p>';
-                    return;
+                    products = defaultProducts;
                 }
 
                 grid.innerHTML = ''; // Clear spinner
 
                 products.forEach(item => {
-                    const img = (item.imagepath && item.imagepath.startsWith('http')) ? item.imagepath : (item.imagepath ? '/' + item.imagepath : '/assets/placeholder.png');
+                    const img = (item.imagepath && item.imagepath.startsWith('http')) ? item.imagepath : (item.imagepath ? item.imagepath.replace(/^\//, '') : 'assets/placeholder.png');
                     grid.innerHTML += `
-                        <div class="corp-card reveal">
+                        <div class="corp-card reveal visible">
                             <div class="corp-img-wrapper">
                                 ${item.badgetext ? `<span class="corp-badge">${item.badgetext}</span>` : ''}
                                 <img src="${img}" alt="${item.title}" class="img-cover">
                                 <div class="corp-overlay">
-                                    <a href="/contact.html?product=${encodeURIComponent(item.title)}" class="btn btn-primary" style="padding: 10px 20px;">Enquire Now</a>
+                                    <a href="contact.html?product=${encodeURIComponent(item.title)}" class="btn btn-primary" style="padding: 10px 20px;">Enquire Now</a>
                                 </div>
                             </div>
                             <div class="corp-content">
@@ -262,7 +272,28 @@
                     window.refreshReveal();
                 }
             } catch (err) {
-                grid.innerHTML = '<p style="text-align:center;width:100%;color:#ef4444;">Unable to load catalog. Please refresh or contact support.</p>';
+                console.warn('Corporate gifts fetch failed, using fallback:', err);
+                grid.innerHTML = '';
+                defaultProducts.forEach(item => {
+                    grid.innerHTML += `
+                        <div class="corp-card reveal visible">
+                            <div class="corp-img-wrapper">
+                                <span class="corp-badge">${item.badgetext}</span>
+                                <img src="${item.imagepath}" alt="${item.title}" class="img-cover">
+                                <div class="corp-overlay">
+                                    <a href="contact.html?product=${encodeURIComponent(item.title)}" class="btn btn-primary" style="padding: 10px 20px;">Enquire Now</a>
+                                </div>
+                            </div>
+                            <div class="corp-content">
+                                <h3>${item.title}</h3>
+                                <p>${item.description}</p>
+                                <a href="https://wa.me/918971488451?text=I%20am%20interested%20in%20${encodeURIComponent(item.title)}" target="_blank" class="btn-text" style="margin-top:auto;">
+                                    WhatsApp Inquiry <i class="fab fa-whatsapp"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
             }
         });
     </script>

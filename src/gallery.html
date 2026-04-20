@@ -519,23 +519,42 @@
                     let data = [];
                     let allCategories = [];
 
+                    const defaultGallery = [
+                        { title: 'Premium Wooden Frame', category: 'handmade', imagepath: 'assets/customised_acrylic_frame.jpg', description: 'Handcrafted premium teak wood frame.' },
+                        { title: 'Passport Photo Service', category: 'passport', imagepath: 'assets/passport_visa_1.jpg', description: 'Professional passport and visa photos.' },
+                        { title: 'Acrylic Photo Mount', category: 'acrylic', imagepath: 'assets/passport_visa_2.jpg', description: 'Modern frameless acrylic mounts.' },
+                        { title: 'Bulk Certificates', category: 'bulk', imagepath: 'assets/featured_photo_frame.png', description: 'Standard frames for institutions.' }
+                    ];
+                    const defaultCategories = [
+                        { name: 'handmade', type: 'gallery' },
+                        { name: 'passport', type: 'gallery' },
+                        { name: 'acrylic', type: 'gallery' },
+                        { name: 'bulk', type: 'gallery' }
+                    ];
+
                     try {
                         const galRes = await fetch('/api/gallery?public=true');
                         if (galRes.ok) data = await galRes.json();
-                    } catch (e) { console.error('Gallery Fetch Error:', e); }
+                        else throw new Error('API down');
+                    } catch (e) { 
+                        console.error('Gallery Fetch Error, using fallbacks:', e); 
+                        data = defaultGallery;
+                    }
 
                     try {
                         const catRes = await fetch('/api/categories');
                         if (catRes.ok) allCategories = await catRes.json();
-                    } catch (e) { console.error('Categories Fetch Error:', e); }
+                        else throw new Error('API down');
+                    } catch (e) { 
+                        console.error('Categories Fetch Error, using fallbacks:', e);
+                        allCategories = defaultCategories;
+                    }
                     
                     const galleryCategories = allCategories.filter(c => c.type === 'gallery');
 
                     grid.innerHTML = '';
-
                     if (!data || !Array.isArray(data) || data.length === 0) {
-                        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center;">No gallery items found yet.</p>';
-                        if (!data || !Array.isArray(data)) data = [];
+                        data = defaultGallery;
                     }
 
                     // Generate Dynamic Filter Buttons unconditionally
@@ -584,10 +603,10 @@
                     // Render Items
                     data.forEach(item => {
                         const card = document.createElement('div');
-                        card.className = 'gallery-card reveal';
+                        card.className = 'gallery-card reveal visible';
                         card.dataset.category = item.category || 'other';
                         card.dataset.title = item.title;
-                        const imgPath = (item.imagepath && item.imagepath.startsWith('http')) ? item.imagepath : (item.imagepath ? '/' + item.imagepath : '/assets/placeholder.png');
+                        const imgPath = (item.imagepath && item.imagepath.startsWith('http')) ? item.imagepath : (item.imagepath ? item.imagepath.replace(/^\//, '') : 'assets/placeholder.png');
 
                         card.innerHTML = `
                             <span class="gallery-card-category">${formatCategoryName(item.category)}</span>

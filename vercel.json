@@ -2,15 +2,9 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "src": "/assets/(.*)", "dest": "/src/assets/$1" },
-    { "src": "/images/(.*)", "dest": "/src/images/$1" },
-    { "src": "/styles.css", "dest": "/src/styles.css" },
-    { "src": "/script.js", "dest": "/src/script.js" },
-    { "src": "/config.js", "dest": "/src/config.js" },
     { "src": "/api/(.*)", "dest": "/server.js" },
-    { "src": "/", "dest": "/src/index.html" },
-    { "src": "/admin", "dest": "/src/login.html" },
-    { "src": "/dashboard", "dest": "/src/admin.html" },
+    { "src": "/admin", "dest": "/login.html" },
+    { "src": "/dashboard", "dest": "/admin.html" },
     { "src": "/(.*)", "dest": "/server.js" }
   ]
 }

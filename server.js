@@ -39,9 +39,9 @@ app.use(cors({
 app.use(express.json());
 
 // Move static files to the TOP to resolve 404/MIME type issues on Vercel
-// Using process.cwd() for reliable path resolution in serverless environments
-const srcPath = path.join(process.cwd(), 'src');
-app.use(express.static(srcPath, { extensions: ['html'] }));
+// Assets are now consolidated in the root for reliable deployment
+const publicPath = process.cwd();
+app.use(express.static(publicPath, { extensions: ['html'] }));
 
 // Setup Multer for Memory Storage (Cloud Uploads)
 const storage = multer.memoryStorage();
@@ -360,7 +360,7 @@ app.post('/api/settings', requireAuth, handlePutSetting); // Allow POST as alias
 
 // Main Page Routes for Clean URLs
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const mainPages = [
@@ -375,12 +375,12 @@ const mainPages = [
 
 mainPages.forEach(page => {
   app.get(`/${page}`, (req, res) => {
-    res.sendFile(path.join(__dirname, 'src', `${page}.html`));
+    res.sendFile(path.join(__dirname, `${page}.html`));
   });
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src', 'login.html'));
+  res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.get('/login', (req, res) => {
@@ -388,7 +388,7 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src', 'admin.html'));
+  res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 // Start Server only if running directly (not as a serverless function)

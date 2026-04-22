@@ -2,14 +2,14 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/images/(.*)", "dest": "/images/$1" },
-    { "src": "/styles.css", "dest": "/styles.css" },
-    { "src": "/script.js", "dest": "/script.js" },
-    { "src": "/config.js", "dest": "/config.js" },
     { "src": "/api/(.*)", "dest": "/server.js" },
-    { "src": "/admin", "dest": "/login.html" },
-    { "src": "/dashboard", "dest": "/admin.html" },
+    { "src": "/admin", "dest": "/public/login.html" },
+    { "src": "/dashboard", "dest": "/public/admin.html" },
+    { "src": "/gallery", "dest": "/public/gallery.html" },
+    { "src": "/about", "dest": "/public/about.html" },
+    { "src": "/contact", "dest": "/public/contact.html" },
+    { "src": "/frames", "dest": "/public/frames.html" },
+    { "src": "/testimonials", "dest": "/public/testimonials.html" },
     { "src": "/(.*)", "dest": "/server.js" }
   ]
 }

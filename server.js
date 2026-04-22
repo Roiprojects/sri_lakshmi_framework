@@ -38,9 +38,8 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Move static files to the TOP to resolve 404/MIME type issues on Vercel
-// Assets are now consolidated in the root for reliable deployment
-const publicPath = process.cwd();
+// Assets are now standardized in the 'public' folder for reliable Vercel serving
+const publicPath = path.join(process.cwd(), 'public');
 app.use(express.static(publicPath, { extensions: ['html'] }));
 
 // Setup Multer for Memory Storage (Cloud Uploads)
@@ -99,12 +98,50 @@ async function handleGet(req, res, table) {
   res.json(data);
 }
 
+// Fallback data for gallery items if database is unavailable
+const FALLBACK_GALLERY = [
+  { id: 1, title: 'Official Passport Standards', category: 'Passport', description: 'High-precision visa and passport photos.', imagepath: 'assets/hp_passport_photo_new.png', is_visible: true, section: 'Home' },
+  { id: 2, title: 'Customised Badges', category: 'Badges', description: 'Premium lapel pins and rosettes.', imagepath: 'assets/hp_custom_badges_new.png', is_visible: true, section: 'Home' },
+  { id: 3, title: 'Family Collage Frame', category: 'Collage', description: 'Preserve family milestones beautifully.', imagepath: 'assets/hp_family_collage_new.png', is_visible: true, section: 'Home' },
+  { id: 4, title: 'Certificate Framework', category: 'Certificate', description: 'Elegant frames for prestigious awards.', imagepath: 'assets/hp_certificate_frame_new.png', is_visible: true, section: 'Home' },
+  { id: 5, title: 'ID Cards & Tags', category: 'ID Cards', description: 'Professional corporate identification sets.', imagepath: 'assets/hp_id_cards_new.png', is_visible: true, section: 'Home' },
+  { id: 6, title: 'Acrylic Photo Frames', category: 'Acrylic', description: 'Modern borderless crystal-clear displays.', imagepath: 'assets/hp_acrylic_frame_new.png', is_visible: true, section: 'Home' }
+];
+
+async function handleGetHomeGallery(req, res) {
+  try {
+    if (!supabase) throw new Error("No database connection");
+    const { data, error } = await supabase
+      .from('home_gallery')
+      .select('*')
+      .eq('is_visible', true)
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    res.json(data && data.length > 0 ? data : FALLBACK_GALLERY);
+  } catch (err) {
+    console.error('API Error (Home Gallery):', err.message);
+    res.json(FALLBACK_GALLERY); // Return fallback data on any error
+  }
+}
+
 async function handleGetSettings(req, res) {
-  const { data, error } = await supabase.from('settings').select('*');
-  if (error) return res.status(500).json({ error: error.message });
-  const settings = {};
-  data.forEach(s => settings[s.id] = s.value);
-  res.json(settings);
+  try {
+    if (!supabase) throw new Error("No database connection");
+    const { data, error } = await supabase.from('settings').select('*');
+    if (error) throw error;
+    const settings = {};
+    data.forEach(s => settings[s.id] = s.value);
+    res.json(settings);
+  } catch (err) {
+    console.error('API Error (Settings):', err.message);
+    // Return minimal valid settings to prevent frontend crash
+    res.json({
+      title: 'Sri Lakshmi Photo Frame Works',
+      phone: '+91 98450 12345',
+      address: 'Bengaluru, Karnataka'
+    });
+  }
 }
 
 async function handlePutSetting(req, res) {

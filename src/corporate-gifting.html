@@ -79,28 +79,28 @@
         </section>
 
         <!-- Why Choose Us Section -->
-        <section class="section-padding why-corporate">
+        <section class="section-padding why-corporate" style="background-color: var(--primary-color); position: relative; overflow: hidden;">
             <div class="container">
                 <div class="text-center">
-                    <h2 class="section-title reveal">Why Choose Sri Lakshmi for Business Gifting?</h2>
-                    <p class="section-subtitle reveal">We provide end-to-end solutions that make corporate gifting seamless and impactful.</p>
+                    <h2 class="section-title reveal" style="color: var(--text-inverse);">Why Choose Sri Lakshmi for Business Gifting?</h2>
+                    <p class="section-subtitle reveal" style="color: #cbd5e1;">We provide end-to-end solutions that make corporate gifting seamless and impactful.</p>
                 </div>
                 
                 <div class="why-corporate-grid stagger-children">
                     <div class="why-card">
                         <div class="why-icon"><i class="fas fa-certificate"></i></div>
-                        <h3>Premium Quality</h3>
-                        <p>We use high-grade materials and expert craftsmanship to ensure every gift meets your professional standards.</p>
+                        <h3 style="color: var(--primary-color);">Premium Quality</h3>
+                        <p style="color: var(--text-light);">We use high-grade materials and expert craftsmanship to ensure every gift meets your professional standards.</p>
                     </div>
                     <div class="why-card">
                         <div class="why-icon"><i class="fas fa-paint-brush"></i></div>
-                        <h3>Custom Branding</h3>
-                        <p>Seamlessly integrate your company logo and brand colors across all products for consistent professional identity.</p>
+                        <h3 style="color: var(--primary-color);">Custom Branding</h3>
+                        <p style="color: var(--text-light);">Seamlessly integrate your company logo and brand colors across all products for consistent professional identity.</p>
                     </div>
                     <div class="why-card">
                         <div class="why-icon"><i class="fas fa-truck-fast"></i></div>
-                        <h3>Bulk & Global Logistics</h3>
-                        <p>Efficient handling of large-scale orders with reliable delivery timelines across Bangalore and beyond.</p>
+                        <h3 style="color: var(--primary-color);">Bulk & Global Logistics</h3>
+                        <p style="color: var(--text-light);">Efficient handling of large-scale orders with reliable delivery timelines across Bangalore and beyond.</p>
                     </div>
                 </div>
             </div>
@@ -126,35 +126,9 @@
         </section>
 
         <!-- Highlighted Uses Section -->
-        <section class="section-padding" style="background-color: var(--primary-color); color: var(--text-inverse); position: relative; overflow: hidden;">
+        <section class="section-padding" style="background-color: var(--background-white); position: relative; overflow: hidden;">
             <div class="container">
-                <div class="text-center">
-                    <h2 class="section-title reveal" style="color: var(--text-inverse);">Impactful Gifting for Every Milestone</h2>
-                    <p class="section-subtitle reveal" style="color: #cbd5e1; max-width: 700px; margin: 0 auto 50px;">Strategic solutions that align with your corporate values and celebratory goals.</p>
-                </div>
-                
-                <div class="features-grid stagger-children">
-                    <div class="feature-item reveal">
-                        <div class="feature-icon"><i class="fas fa-trophy"></i></div>
-                        <h3>Employee Recognition</h3>
-                        <p>Celebrate growth and excellence with award frames and personalized achievement certificates.</p>
-                    </div>
-                    <div class="feature-item reveal">
-                        <div class="feature-icon"><i class="fas fa-handshake"></i></div>
-                        <h3>Client Appreciation</h3>
-                        <p>Strengthen business partnerships with premium mementos that convey trust and quality.</p>
-                    </div>
-                    <div class="feature-item reveal">
-                        <div class="feature-icon"><i class="fas fa-calendar-star"></i></div>
-                        <h3>Corporate Events</h3>
-                        <p>Create lasting impressions at AGMs, product launches, and company retreats with custom takeaways.</p>
-                    </div>
-                    <div class="feature-item reveal">
-                        <div class="feature-icon"><i class="fas fa-gift"></i></div>
-                        <h3>Festival & Branding</h3>
-                        <p>Celebrate the seasons and boost promotional visibility with high-quality branded gifting sets.</p>
-                    </div>
-                </div>
+
 
                 <!-- Bulk Order Banner -->
                 <div class="bulk-order-banner reveal">
@@ -209,7 +183,7 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; 2026 Lakshmi Framework. All rights reserved.</p>
-            <p style="margin-top: 8px; font-size: 0.95rem; font-weight: 500;"><a href="https://wa.me/919945379333" target="_blank" style="color: var(--secondary-color); text-decoration: none;">Developed by ROI Infotech</a> | <a href="login.html" class="staff-login-link" style="color: rgba(255,255,255,0.4); text-decoration: none; margin-left: 10px; font-size: 0.8rem; transition: 0.3s;">Staff Login</a></p>
+            <p style="margin-top: 8px; font-size: 0.95rem; font-weight: 500;"><a href="https://wa.me/919945379333" target="_blank" style="color: var(--secondary-color); text-decoration: none;">Developed by ROI Infotech</a></p>
         </div>
     </footer>
 
@@ -227,8 +201,7 @@
             
             const defaultProducts = [
                 { title: 'Custom Award Shield', description: 'Premium wooden award shield with metallic plaque for employee recognition.', imagepath: 'assets/corporate_gift_set.png', badgetext: 'Popular' },
-                { title: 'Executive Gifting Kit', description: 'Curated set including branded dairy, pen, and keychain in a premium box.', imagepath: 'assets/corporate_gifting_realistic.png', badgetext: 'New' },
-                { title: 'Acrylic Excellence Memento', description: 'High-grade crystal clear acrylic memento with custom engraving.', imagepath: 'assets/customised_acrylic_frame.jpg', badgetext: 'Corporate' }
+                { title: 'Executive Gifting Kit', description: 'Curated set including branded dairy, pen, and keychain in a premium box.', imagepath: 'assets/corporate_gifting_realistic.png', badgetext: 'New' }
             ];
 
             try {
@@ -260,9 +233,6 @@
                             <div class="corp-content">
                                 <h3>${item.title}</h3>
                                 <p>${item.description}</p>
-                                <a href="https://wa.me/918971488451?text=I%20am%20interested%20in%20${encodeURIComponent(item.title)}" target="_blank" class="btn-text" style="margin-top:auto;">
-                                    WhatsApp Inquiry <i class="fab fa-whatsapp"></i>
-                                </a>
                             </div>
                         </div>
                     `;
@@ -288,9 +258,6 @@
                             <div class="corp-content">
                                 <h3>${item.title}</h3>
                                 <p>${item.description}</p>
-                                <a href="https://wa.me/918971488451?text=I%20am%20interested%20in%20${encodeURIComponent(item.title)}" target="_blank" class="btn-text" style="margin-top:auto;">
-                                    WhatsApp Inquiry <i class="fab fa-whatsapp"></i>
-                                </a>
                             </div>
                         </div>
                     `;

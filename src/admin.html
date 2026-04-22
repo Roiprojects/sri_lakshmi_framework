@@ -756,53 +756,82 @@
             const grid = document.getElementById(gridId);
             grid.innerHTML = '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #94a3b8;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
             
+            let data = null;
+            let usingSupaDirectly = false;
+
             try {
                 const res = await fetch(endpoints[type]);
                 if(res.status === 403) return logout();
-                const data = await res.json();
-                grid.innerHTML = '';
-                
-                if (data.length === 0) {
-                    grid.innerHTML = '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #94a3b8; background: #fff; border-radius: 12px; border: 1px dashed #ccc;">No records found. The database is empty for this section.</div>';
-                    return;
+                if(res.ok) {
+                    data = await res.json();
+                } else {
+                    throw new Error('Server returned HTTP bad status');
                 }
-                
-                data.forEach(item => {
-                    const el = document.createElement('div');
-                    el.className = 'data-item';
-
-                    const imgPath = item.imagepath || item.clientimage || 'assets/placeholder.jpg';
-                    const img = window.APP_CONFIG.getAssetUrl(imgPath);
-                    const title = item.title || item.clientname || item.name || 'Untitled';
-                    const desc = item.description || item.quote || item.subtitle || '';
-                    const badge = item.category || item.badgetext || (item.rating ? item.rating + ' Stars' : null);
-                    const isVisible = item.is_visible !== false;
-
-                    el.innerHTML = `
-                        <img src="${img}" class="data-item-img" style="opacity: ${isVisible ? 1 : 0.4}">
-                        ${!isVisible ? '<div class="status-badge hidden"><i class="fas fa-eye-slash"></i> Hidden</div>' : '<div class="status-badge"><i class="fas fa-circle" style="color:#10b981; font-size: 8px; margin-right:4px;"></i> Live</div>'}
-                        <div class="data-item-info" style="opacity: ${isVisible ? 1 : 0.5}">
-                            ${badge ? `<div class="category-tag mb-2">${badge}</div>` : ''}
-                            <h4 style="margin-top: 8px;">${title}</h4>
-                            <p>${desc.substring(0, 75)}${desc.length > 75 ? '...' : ''}</p>
-                        </div>
-                        <div class="data-item-actions" style="grid-template-columns: 1fr 1fr 1fr;">
-                            <button onclick="toggleVisibility('${type}', '${item.id}', ${!isVisible})" class="action-btn btn-toggle ${!isVisible ? 'is-hidden' : ''}">
-                                <i class="fas ${isVisible ? 'fa-eye-slash' : 'fa-eye'}"></i> ${isVisible ? 'Hide' : 'Show'}
-                            </button>
-                            <button onclick="editItem('${type}', '${item.id}')" class="action-btn" style="border-right: 1px solid var(--border);">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button onclick="deleteItem('${type}', '${item.id}')" class="action-btn btn-del">
-                                <i class="fas fa-trash-alt"></i> Del
-                            </button>
-                        </div>
-                    `;
-                    grid.appendChild(el);
-                });
             } catch (err) {
-                grid.innerHTML = '<div style="color: red; padding: 20px;">Network Error connecting to Supabase.</div>';
+                // If local server is down, try fetching directly from Supabase to at least VIEW the data
+                console.warn("Local server down, trying direct Supabase fetch for view mode...");
+                const supaData = await window.APP_CONFIG.smartFetch(type, false); // false = show hidden items too
+                if (supaData && supaData.length > 0) {
+                    data = supaData;
+                    usingSupaDirectly = true;
+                }
             }
+
+            if (data === null || !Array.isArray(data)) {
+                // Both Server and Supabase direct fetching failed
+                const isLocal = window.location.protocol === 'file:';
+                if (isLocal) {
+                    grid.innerHTML = '<div style="grid-column: 1/-1; color: #ef4444; padding: 30px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; text-align: center;"><i class="fas fa-server fa-2x" style="margin-bottom: 15px;"></i><h3 style="margin: 0 0 10px 0;">Local Backend Server Not Running</h3><p style="margin: 0;">You are viewing this file locally. Please open your terminal and run <code>node server.js</code> to connect to the database to manage data.</p></div>';
+                } else {
+                    grid.innerHTML = '<div style="grid-column: 1/-1; color: #ef4444; padding: 20px; background: #fef2f2; border-radius: 12px; text-align: center;">Network Error: Cannot connect to the API server.</div>';
+                }
+                return;
+            }
+
+            grid.innerHTML = '';
+            
+            if (usingSupaDirectly) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; background: #fffbeb; color: #b45309; padding: 10px 15px; border-radius: 8px; border: 1px solid #fde68a; margin-bottom: 15px; font-size: 0.9em;"><i class="fas fa-exclamation-triangle"></i> <b>Read-Only Mode:</b> Local server is not running. You are viewing live data from the database, but you cannot edit or delete items until you run <code>node server.js</code>.</div>';
+            }
+
+            if (data.length === 0) {
+                grid.innerHTML += '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #94a3b8; background: #fff; border-radius: 12px; border: 1px dashed #ccc;">No records found. The database is empty for this section.</div>';
+                return;
+            }
+            
+            data.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'data-item';
+
+                const imgPath = item.imagepath || item.clientimage || 'assets/placeholder.jpg';
+                const img = window.APP_CONFIG.getAssetUrl(imgPath);
+                const title = item.title || item.clientname || item.name || 'Untitled';
+                const desc = item.description || item.quote || item.subtitle || '';
+                const badge = item.category || item.badgetext || (item.rating ? item.rating + ' Stars' : null);
+                const isVisible = item.is_visible !== false;
+
+                el.innerHTML = `
+                    <img src="${img}" class="data-item-img" style="opacity: ${isVisible ? 1 : 0.4}">
+                    ${!isVisible ? '<div class="status-badge hidden"><i class="fas fa-eye-slash"></i> Hidden</div>' : '<div class="status-badge"><i class="fas fa-circle" style="color:#10b981; font-size: 8px; margin-right:4px;"></i> Live</div>'}
+                    <div class="data-item-info" style="opacity: ${isVisible ? 1 : 0.5}">
+                        ${badge ? `<div class="category-tag mb-2">${badge}</div>` : ''}
+                        <h4 style="margin-top: 8px;">${title}</h4>
+                        <p>${desc.substring(0, 75)}${desc.length > 75 ? '...' : ''}</p>
+                    </div>
+                    <div class="data-item-actions" style="grid-template-columns: 1fr 1fr 1fr; opacity: ${usingSupaDirectly ? 0.5 : 1}; pointer-events: ${usingSupaDirectly ? 'none' : 'auto'};">
+                        <button onclick="toggleVisibility('${type}', '${item.id}', ${!isVisible})" class="action-btn btn-toggle ${!isVisible ? 'is-hidden' : ''}">
+                            <i class="fas ${isVisible ? 'fa-eye-slash' : 'fa-eye'}"></i> ${isVisible ? 'Hide' : 'Show'}
+                        </button>
+                        <button onclick="editItem('${type}', '${item.id}')" class="action-btn" style="border-right: 1px solid var(--border);">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button onclick="deleteItem('${type}', '${item.id}')" class="action-btn btn-del">
+                            <i class="fas fa-trash-alt"></i> Del
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(el);
+            });
         }
 
         // Category Management Functions
@@ -904,7 +933,7 @@
             if (!await customConfirm(`Create new ${type} category: "${name}"?`)) return;
 
             try {
-                const res = await fetch('/api/categories', {
+                const res = await fetch(window.APP_CONFIG.getApiUrl('/api/categories'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...authHeaders },
                     body: JSON.stringify({ name, type })
@@ -924,7 +953,7 @@
                 const itemRes = await fetch(endpoints[type]);
                 const items = await itemRes.json();
                 
-                const catRes = await fetch('/api/categories');
+                const catRes = await fetch(window.APP_CONFIG.getApiUrl('/api/categories'));
                 const existingCats = await catRes.json();
                 const targetType = type === 'gallery' ? 'gallery' : 'frame';
                 const existingNames = existingCats.filter(c => c.type === targetType).map(c => c.name.toLowerCase());
@@ -934,7 +963,7 @@
                 let addedCount = 0;
                 for (const catName of uniqueItemCats) {
                     if (!existingNames.includes(catName.toLowerCase())) {
-                        await fetch('/api/categories', {
+                        await fetch(window.APP_CONFIG.getApiUrl('/api/categories'), {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', ...authHeaders },
                             body: JSON.stringify({ name: catName, type: targetType })
@@ -954,7 +983,7 @@
         async function deleteCategory(id) {
             if (!await customConfirm('Permanent deletion of this category will not affect existing items but will remove it from dropdowns. Proceed?')) return;
             try {
-                const res = await fetch('/api/categories/' + id, { method: 'DELETE', headers: authHeaders });
+                const res = await fetch(window.APP_CONFIG.getApiUrl('/api/categories/') + id, { method: 'DELETE', headers: authHeaders });
                 if (res.ok) {
                     showToast('Category removed');
                     fetchCategories();

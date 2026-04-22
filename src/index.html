@@ -390,7 +390,7 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; 2026 Lakshmi Framework. All rights reserved.</p>
-            <p style="margin-top: 8px; font-size: 0.95rem; font-weight: 500;"><a href="https://wa.me/919945379333" target="_blank" style="color: var(--secondary-color); text-decoration: none; transition: 0.3s;">Developed by ROI Infotech</a> | <a href="login.html" class="staff-login-link" style="color: rgba(255,255,255,0.4); text-decoration: none; margin-left: 10px; font-size: 0.8rem; transition: 0.3s;">Staff Login</a></p>
+            <p style="margin-top: 8px; font-size: 0.95rem; font-weight: 500;"><a href="https://wa.me/919945379333" target="_blank" style="color: var(--secondary-color); text-decoration: none; transition: 0.3s;">Developed by ROI Infotech</a></p>
         </div>
     </footer>
 
@@ -404,109 +404,56 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Fetch Home Gallery Preview (Top 6-12)
-            try {
-                const galRes = await fetch(window.APP_CONFIG.getApiUrl('/api/home-gallery?public=true'));
-                const galData = await galRes.json();
-                const galGrid = document.getElementById('gallery-preview-grid');
-                
-                const renderGallery = (data) => {
-                    if (data && Array.isArray(data) && data.length > 0) {
-                        galGrid.innerHTML = '';
-                        data.slice(0, 12).forEach(item => {
-                            const img = window.APP_CONFIG.getAssetUrl(item.imagepath);
-                            galGrid.innerHTML += `
-                                <div class="gallery-preview-item aspect-4-3 reveal">
-                                    <img src="${img}" alt="${item.title}" class="img-cover">
-                                    <div class="gallery-preview-overlay"><span>${item.title}</span></div>
-                                </div>
-                            `;
-                        });
-                        if (window.refreshReveal) window.refreshReveal();
-                    } else {
-                        throw new Error('Empty data');
-                    }
-                };
-
-                renderGallery(galData);
-            } catch(e) {
-                console.log('Using Gallery fallback');
+            // 1. Fetch Home Gallery Preview (server → Supabase direct → fallback)
+            {
                 const galGrid = document.getElementById('gallery-preview-grid');
                 const defaults = [
-                    { title: 'Passport Photos', imagepath: 'assets/passport_visa_1.jpg' },
-                    { title: 'Acrylic Frames', imagepath: 'assets/customised_acrylic_frame.jpg' },
-                    { title: 'Corporate Gifting', imagepath: 'assets/featured_photo_frame.png' },
-                    { title: 'Custom Frames', imagepath: 'assets/passport_visa_2.jpg' },
-                    { title: 'Portrait Prints', imagepath: 'assets/passport_visa_3.jpg' },
-                    { title: 'ID Cards', imagepath: 'assets/featured_photo_frame.png' }
+                    { title: 'Customised Badges', imagepath: 'assets/hp_custom_badges_new.png' },
+                    { title: 'Customised Acrylic Frame', imagepath: 'assets/hp_acrylic_frame_new.png' },
+                    { title: 'Family Collage Frame', imagepath: 'assets/hp_family_collage_new.png' },
+                    { title: 'Certificate Framework', imagepath: 'assets/hp_certificate_frame_new.png' },
+                    { title: 'ID Cards & Tags', imagepath: 'assets/hp_id_cards_new.png' },
+                    { title: 'Passport & Visa Photo', imagepath: 'assets/hp_passport_photo_new.png' }
                 ];
-                galGrid.innerHTML = '';
-                defaults.forEach(item => {
-                    galGrid.innerHTML += `
-                        <div class="gallery-preview-item aspect-4-3 reveal visible">
-                            <img src="${item.imagepath}" alt="${item.title}" class="img-cover">
-                            <div class="gallery-preview-overlay"><span>${item.title}</span></div>
-                        </div>
-                    `;
-                });
+
+                const renderGallery = (data) => {
+                    galGrid.innerHTML = '';
+                    data.slice(0, 6).forEach(item => {
+                        const img = window.APP_CONFIG.getAssetUrl(item.imagepath);
+                        galGrid.innerHTML += `
+                            <div class="gallery-preview-item aspect-4-3 reveal visible">
+                                <img src="${img}" alt="${item.title}" class="img-cover">
+                                <div class="gallery-preview-overlay"><span>${item.title}</span></div>
+                            </div>
+                        `;
+                    });
+                    if (window.refreshReveal) window.refreshReveal();
+                };
+
+                const galData = await window.APP_CONFIG.smartFetch('home_gallery', true);
+                renderGallery(galData && galData.length > 0 ? galData : defaults);
             }
 
-            // 2. Fetch Testimonials
-            try {
-                const testRes = await fetch(window.APP_CONFIG.getApiUrl('/api/testimonials?public=true'));
-                const testData = await testRes.json();
+            // 2. Fetch Testimonials (server → Supabase direct → fallback)
+            {
                 const track = document.getElementById('testimonialsTrack');
-                
-                const renderTestimonials = (data) => {
-                    if (data && Array.isArray(data) && data.length > 0) {
-                        track.innerHTML = '';
-                        const renderCard = (t) => {
-                            const stars = Array(5).fill('<i class="far fa-star"></i>');
-                            const full = Math.floor(t.rating);
-                            for(let i=0; i<full; i++) stars[i] = '<i class="fas fa-star"></i>';
-                            const img = window.APP_CONFIG.getAssetUrl(t.clientimage);
-                            return `
-                                <div class="testimonial-card-themed">
-                                    <i class="fas fa-quote-right quote-icon"></i>
-                                    <p class="testimonial-text">"${t.quote}"</p>
-                                    <div class="client-info">
-                                        <img src="${img}" alt="${t.clientname}" class="client-img aspect-avatar img-cover" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(t.clientname)}&background=random'">
-                                        <div class="client-details">
-                                            <h4>${t.clientname}</h4>
-                                            <div class="rating">${stars.join('')}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        };
-                        
-                        data.forEach(t => track.innerHTML += renderCard(t));
-                        data.forEach(t => track.innerHTML += renderCard(t)); // Clone for infinite scroll
-                    } else {
-                        throw new Error('Empty data');
-                    }
-                };
-
-                renderTestimonials(testData);
-            } catch(e) {
-                console.log('Using Testimonials fallback');
-                const track = document.getElementById('testimonialsTrack');
-                const defaults = [
+                const defaultTestimonials = [
                     { clientname: 'Ramesh Kumar', rating: 5, quote: 'Excellent framing work! Highly recommended for their professional approach and quality.', clientimage: 'assets/placeholder.png' },
                     { clientname: 'Priya S.', rating: 5, quote: 'Best place for corporate gifting solutions. They handled our bulk order perfectly and ahead of schedule.', clientimage: 'assets/placeholder.png' },
                     { clientname: 'Anand Varma', rating: 4, quote: 'Fast and professional service. The customized acrylic frames are stunning.', clientimage: 'assets/placeholder.png' }
                 ];
-                track.innerHTML = '';
+
                 const renderCard = (t) => {
                     const stars = Array(5).fill('<i class="far fa-star"></i>');
-                    const full = Math.floor(t.rating);
+                    const full = Math.floor(t.rating || 0);
                     for(let i=0; i<full; i++) stars[i] = '<i class="fas fa-star"></i>';
+                    const img = window.APP_CONFIG.getAssetUrl(t.clientimage);
                     return `
                         <div class="testimonial-card-themed">
                             <i class="fas fa-quote-right quote-icon"></i>
                             <p class="testimonial-text">"${t.quote}"</p>
                             <div class="client-info">
-                                <img src="${t.clientimage}" alt="${t.clientname}" class="client-img aspect-avatar img-cover" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(t.clientname)}&background=random'">
+                                <img src="${img}" alt="${t.clientname}" class="client-img aspect-avatar img-cover" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(t.clientname)}&background=random'">
                                 <div class="client-details">
                                     <h4>${t.clientname}</h4>
                                     <div class="rating">${stars.join('')}</div>
@@ -515,8 +462,12 @@
                         </div>
                     `;
                 };
-                defaults.forEach(t => track.innerHTML += renderCard(t));
-                defaults.forEach(t => track.innerHTML += renderCard(t));
+
+                const testData = await window.APP_CONFIG.smartFetch('testimonials', true);
+                const testList = (testData && testData.length > 0) ? testData : defaultTestimonials;
+                track.innerHTML = '';
+                testList.forEach(t => track.innerHTML += renderCard(t));
+                testList.forEach(t => track.innerHTML += renderCard(t)); // Clone for infinite scroll
             }
         });
     </script>

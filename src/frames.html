@@ -465,7 +465,7 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; 2026 Lakshmi Framework. All rights reserved.</p>
-            <p style="margin-top: 8px; font-size: 0.95rem; font-weight: 500;"><a href="https://wa.me/919945379333" target="_blank" style="color: var(--secondary-color); text-decoration: none; transition: 0.3s;">Developed by ROI Infotech</a> | <a href="login.html" class="staff-login-link" style="color: rgba(255,255,255,0.4); text-decoration: none; margin-left: 10px; font-size: 0.8rem; transition: 0.3s;">Staff Login</a></p>
+            <p style="margin-top: 8px; font-size: 0.95rem; font-weight: 500;"><a href="https://wa.me/919945379333" target="_blank" style="color: var(--secondary-color); text-decoration: none; transition: 0.3s;">Developed by ROI Infotech</a></p>
         </div>
     </footer>
 
@@ -486,143 +486,163 @@
             // Immediate clearing to replace original spinner
             container.innerHTML = '<div style="text-align:center; padding:100px; color:#94a3b8;"><p><i class="fas fa-sync fa-spin"></i> Synchronizing collections...</p></div>';
 
+                let data = [];
+                let allCategories = [];
                 const defaultFrames = [
-                    { title: 'Standard Passport Frame', category: 'passport-frames', imagepath: 'assets/passport_visa_1.jpg', description: 'Classical passport size photo frame.' },
-                    { title: 'Institutional Certificate Frame', category: 'bulk-certificate', imagepath: 'assets/featured_photo_frame.png', description: 'Durable frame for school and college certificates.' },
-                    { title: 'Frameless Acrylic Portrait', category: 'acrylic-frames', imagepath: 'assets/customised_acrylic_frame.jpg', description: 'Crystal clear acrylic mounting for modern look.' },
-                    { title: 'Collage Frame (9-Grid)', category: 'collage-frames', imagepath: 'assets/passport_visa_2.jpg', description: 'Multiple photos in a single elegant layout.' }
+                    { title: 'Passport Size Photo', category: 'passport-frames', imagepath: 'assets/hp_passport_photo_new.png', description: 'Government-compliant passport and visa photos for all countries.' },
+                    { title: 'Visa Photo Service', category: 'passport-frames', imagepath: 'assets/passport_visa_1.jpg', description: 'Professional visa photos with white background.' },
+                    { title: 'ID Card Photos', category: 'passport-frames', imagepath: 'assets/passport_visa_2.jpg', description: 'Clear and professional ID card photos.' },
+                    { title: 'Certificate Frame (Single)', category: 'bulk-certificate', imagepath: 'assets/hp_certificate_frame_new.png', description: 'Premium wooden frame for certificates and awards.' },
+                    { title: 'Bulk Certificate Framing', category: 'bulk-certificate', imagepath: 'assets/gallery_certificate.png', description: 'Bulk framing solutions for institutions and corporates.' },
+                    { title: 'Acrylic Portrait Frame', category: 'acrylic-frames', imagepath: 'assets/hp_acrylic_frame_new.png', description: 'Crystal clear acrylic mount for modern portraits.' },
+                    { title: 'Acrylic Photo Display', category: 'acrylic-frames', imagepath: 'assets/gallery_acrylic.png', description: 'Frameless acrylic display for modern interiors.' },
+                    { title: 'Family Collage (9-Grid)', category: 'collage-frames', imagepath: 'assets/hp_family_collage_new.png', description: 'Multi-photo collage in a single elegant layout.' },
+                    { title: 'Collage Wall Frame', category: 'collage-frames', imagepath: 'assets/gallery_collage.png', description: 'Large collage frame for living room walls.' },
+                    { title: 'Metal Name Badges', category: 'badges-frames', imagepath: 'assets/hp_custom_badges_new.png', description: 'Customized gold and silver name badges with Kannada text.' },
+                    { title: 'Corporate ID Cards', category: 'badges-frames', imagepath: 'assets/hp_id_cards_new.png', description: 'Custom printed plastic ID cards with lanyards.' },
+                    { title: 'Badge Collection', category: 'badges-frames', imagepath: 'assets/gallery_badges.png', description: 'Full range of office and event badges.' }
                 ];
                 const defaultCatData = [
                     { name: 'passport-frames', type: 'frame' },
                     { name: 'bulk-certificate', type: 'frame' },
                     { name: 'acrylic-frames', type: 'frame' },
-                    { name: 'collage-frames', type: 'frame' }
+                    { name: 'collage-frames', type: 'frame' },
+                    { name: 'badges-frames', type: 'frame' }
                 ];
 
+                // Use smartFetch: server → Supabase direct → static fallback
+                const liveFrames = await window.APP_CONFIG.smartFetch('frames', true);
+                if (liveFrames && liveFrames.length > 0) {
+                    data = liveFrames;
+                } else {
+                    console.warn('Frames: using static fallback');
+                    data = defaultFrames;
+                }
+
+                const liveCats = await window.APP_CONFIG.smartFetch('categories', false);
+                if (liveCats && liveCats.length > 0) {
+                    allCategories = liveCats;
+                } else {
+                    allCategories = defaultCatData;
+                }
+                
                 try {
-                    // Parallel fetch
-                    const [frameRes, catRes] = await Promise.all([
-                        fetch(window.APP_CONFIG.getApiUrl('/api/frames?public=true')).catch(e => ({ ok: false, error: e })),
-                        fetch(window.APP_CONFIG.getApiUrl('/api/categories')).catch(e => ({ ok: false, error: e }))
-                    ]);
-
-                    if (frameRes.ok) data = await frameRes.json();
-                    else { console.warn('Frames API failed, using defaults'); data = defaultFrames; }
-
-                    if (catRes.ok) allCategories = await catRes.json();
-                    else { console.warn('Categories API failed, using defaults'); allCategories = defaultCatData; }
-                } catch(e) {
-                    console.error('Fetch failed, using fallbacks:', e);
-                    data = defaultFrames;
-                    allCategories = defaultCatData;
-                }
-                
-                const framesCategories = Array.isArray(allCategories) ? allCategories.filter(c => c.type === 'frame') : [];
-                if (framesCategories.length === 0) {
-                    allCategories = defaultCatData;
-                }
-                
-                // CRITICAL: Final clear before render
-                container.innerHTML = '';
-
-                if (!data || !Array.isArray(data) || data.length === 0) {
-                    data = defaultFrames;
-                }
-
-                const managedCats = {};
-                framesCategories.forEach((c, idx) => {
-                    managedCats[c.name] = { 
-                        title: c.name, 
-                        num: (idx + 1).toString().padStart(2, '0'), 
-                        desc: 'Premium framing collections tailored for your needs.' 
-                    };
-                });
-
-                const grouped = data.reduce((acc, frame) => {
-                    if (!acc[frame.category]) acc[frame.category] = [];
-                    acc[frame.category].push(frame);
-                    return acc;
-                }, {});
-
-                // If categories from API were missing/blocked, infer them from data
-                const allCategoryIds = [...new Set([...Object.keys(managedCats), ...Object.keys(grouped)])];
-                
-                const filterInner = document.getElementById('framesFilterInner');
-                if (filterInner) {
-                    filterInner.innerHTML = '';
-                    allCategoryIds.forEach((catId, index) => {
-                        const a = document.createElement('a');
-                        a.href = '#' + catId;
-                        a.className = 'filter-tab' + (index === 0 ? ' active' : '');
-                        const displayTitle = (managedCats[catId] ? managedCats[catId].title : catId).split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                        a.innerHTML = `<i class="fas fa-border-all"></i> ${displayTitle}`;
-                        filterInner.appendChild(a);
-                    });
-                }
-
-                allCategoryIds.forEach(catId => {
-                    const framesResult = grouped[catId] || [];
-                    const catData = managedCats[catId] || {
-                        title: catId.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-                        num: '??',
-                        desc: 'Specialized framing collection.'
-                    };
-
-                    const catSection = document.createElement('section');
-                    catSection.className = 'frame-category';
-                    catSection.id = catId;
+                    const framesCategories = Array.isArray(allCategories) ? allCategories.filter(c => c.type === 'frame') : [];
+                    if (framesCategories.length === 0) {
+                        allCategories = defaultCatData;
+                    }
                     
-                    catSection.innerHTML = `
-                        <div class="container">
-                            <div class="cat-header">
-                                <div class="cat-number">${catData.num}</div>
-                                <div class="cat-title-block">
-                                    <h2>${catData.title}</h2>
-                                    <p>${catData.desc}</p>
-                                </div>
-                            </div>
-                            <div class="frames-grid">
-                                ${framesResult.length > 0 ? framesResult.map(f => {
-                                    const img = window.APP_CONFIG.getAssetUrl(f.imagepath);
-                                    const desc = f.description || 'Premium quality frame';
-                                    return `
-                                    <div class="frame-card">
-                                        <div class="frame-img-wrap">
-                                            <img src="${img}" alt="${f.title}" onerror="this.src='assets/placeholder.png'">
-                                            ${f.badgetext ? `<span class="frame-card-badge">${f.badgetext}</span>` : ''}
-                                            <div class="frame-img-overlay">
-                                                <p>${desc}</p>
-                                                <a href="https://wa.me/${whatsappNumber}?text=Hi, I'm interested in the ${f.title}" target="_blank" class="overlay-enquire">Enquire on WhatsApp</a>
-                                            </div>
-                                        </div>
-                                        <div class="frame-card-body">
-                                            <h3>${f.title}</h3>
-                                            <p>${desc.substring(0, 80)}${desc.length > 80 ? '...' : ''}</p>
-                                            <a href="https://wa.me/${whatsappNumber}?text=Hi, I'm interested in the ${f.title}" target="_blank" class="frame-enquire-link">View Pricing Details <i class="fas fa-arrow-right"></i></a>
-                                        </div>
-                                    </div>`;
-                                }).join('') : '<p style="grid-column:1/-1; color:#94a3b8; padding: 20px 0;">New collections coming soon!</p>'}
-                            </div>
-                        </div>`;
-                    container.appendChild(catSection);
-                });
+                    // CRITICAL: Final clear before render
+                    container.innerHTML = '';
 
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const id = entry.target.id;
-                            document.querySelectorAll('.filter-tab').forEach(tab => {
-                                tab.classList.toggle('active', tab.getAttribute('href') === '#' + id);
-                            });
+                    if (!data || !Array.isArray(data) || data.length === 0) {
+                        data = defaultFrames;
+                    }
+
+                    const categoryMapping = {
+                        'passport': 'passport-frames',
+                        'acrylic': 'acrylic-frames',
+                        'collage': 'collage-frames',
+                        'badges': 'badges-frames',
+                        'certificate': 'bulk-certificate'
+                    };
+                    const normalizeCat = (cat) => categoryMapping[cat] || cat;
+
+                    const managedCats = {};
+                    let catIdx = 1;
+                    framesCategories.forEach((c) => {
+                        const normCat = normalizeCat(c.name);
+                        if (!managedCats[normCat]) {
+                            managedCats[normCat] = { 
+                                title: normCat, 
+                                num: (catIdx++).toString().padStart(2, '0'), 
+                                desc: 'Premium framing collections tailored for your needs.' 
+                            };
                         }
                     });
-                }, { rootMargin: '-30% 0px -60% 0px' });
-                document.querySelectorAll('.frame-category').forEach(cat => observer.observe(cat));
 
-            } catch (e) {
-                console.error('Critical render error:', e);
-                container.innerHTML = '<div style="text-align:center; padding:100px; color:red;"><p>Unable to load collections at this time. Please refresh the page.</p></div>';
-            }
+                    const grouped = data.reduce((acc, frame) => {
+                        const normCat = normalizeCat(frame.category);
+                        if (!acc[normCat]) acc[normCat] = [];
+                        acc[normCat].push(frame);
+                        return acc;
+                    }, {});
+
+                    // If categories from API were missing/blocked, infer them from data
+                    const allCategoryIds = [...new Set([...Object.keys(managedCats), ...Object.keys(grouped)])];
+                    
+                    const filterInner = document.getElementById('framesFilterInner');
+                    if (filterInner) {
+                        filterInner.innerHTML = '';
+                        allCategoryIds.forEach((catId, index) => {
+                            const a = document.createElement('a');
+                            a.href = '#' + catId;
+                            a.className = 'filter-tab' + (index === 0 ? ' active' : '');
+                            const displayTitle = (managedCats[catId] ? managedCats[catId].title : catId).split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                            a.innerHTML = `<i class="fas fa-border-all"></i> ${displayTitle}`;
+                            filterInner.appendChild(a);
+                        });
+                    }
+
+                    allCategoryIds.forEach(catId => {
+                        const framesResult = grouped[catId] || [];
+                        const catData = managedCats[catId] || {
+                            title: catId.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+                            num: '??',
+                            desc: 'Specialized framing collection.'
+                        };
+
+                        const catSection = document.createElement('section');
+                        catSection.className = 'frame-category';
+                        catSection.id = catId;
+                        
+                        catSection.innerHTML = `
+                            <div class="container">
+                                <div class="cat-header">
+                                    <div class="cat-number">${catData.num}</div>
+                                    <div class="cat-title-block">
+                                        <h2>${catData.title}</h2>
+                                        <p>${catData.desc}</p>
+                                    </div>
+                                </div>
+                                <div class="frames-grid">
+                                    ${framesResult.length > 0 ? framesResult.map(f => {
+                                        const img = window.APP_CONFIG.getAssetUrl(f.imagepath);
+                                        const desc = f.description || 'Premium quality frame';
+                                        return `
+                                        <div class="frame-card">
+                                            <div class="frame-img-wrap">
+                                                <img src="${img}" alt="${f.title}" onerror="this.src='assets/placeholder.png'">
+                                                ${f.badgetext ? `<span class="frame-card-badge">${f.badgetext}</span>` : ''}
+                                                <div class="frame-img-overlay">
+                                                    <h4 style="color: var(--secondary-color); font-size: 1.1rem; margin-bottom: 6px; font-family: var(--font-heading);">${f.title}</h4>
+                                                    <p>${desc}</p>
+                                                    <a href="https://wa.me/${whatsappNumber}?text=Hi, I'm interested in the ${f.title}" target="_blank" class="overlay-enquire">Enquire on WhatsApp</a>
+                                                </div>
+                                            </div>
+                                        </div>`;
+                                    }).join('') : '<p style="grid-column:1/-1; color:#94a3b8; padding: 20px 0;">New collections coming soon!</p>'}
+                                </div>
+                            </div>`;
+                        container.appendChild(catSection);
+                    });
+
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const id = entry.target.id;
+                                document.querySelectorAll('.filter-tab').forEach(tab => {
+                                    tab.classList.toggle('active', tab.getAttribute('href') === '#' + id);
+                                });
+                            }
+                        });
+                    }, { rootMargin: '-30% 0px -60% 0px' });
+                    document.querySelectorAll('.frame-category').forEach(cat => observer.observe(cat));
+
+                } catch (e) {
+                    console.error('Critical render error:', e);
+                    container.innerHTML = '<div style="text-align:center; padding:100px; color:red;"><p>Unable to load collections at this time. Please refresh the page.</p></div>';
+                }
         })();
     </script>
 </body>

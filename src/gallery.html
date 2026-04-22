@@ -515,42 +515,50 @@
                     return name.split(/[-_]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                 }
 
-                // Fetch Data
+                // Fetch Data — smartFetch tries server first, then Supabase directly
                 try {
                     let data = [];
                     let allCategories = [];
 
                     const defaultGallery = [
-                        { title: 'Premium Wooden Frame', category: 'handmade', imagepath: 'assets/customised_acrylic_frame.jpg', description: 'Handcrafted premium teak wood frame.' },
-                        { title: 'Passport Photo Service', category: 'passport', imagepath: 'assets/passport_visa_1.jpg', description: 'Professional passport and visa photos.' },
-                        { title: 'Acrylic Photo Mount', category: 'acrylic', imagepath: 'assets/passport_visa_2.jpg', description: 'Modern frameless acrylic mounts.' },
-                        { title: 'Bulk Certificates', category: 'bulk', imagepath: 'assets/featured_photo_frame.png', description: 'Standard frames for institutions.' }
+                        { title: 'Customised Badges', category: 'badges', imagepath: 'assets/hp_custom_badges_new.png', description: 'Gold & silver embossed name badges with Kannada and English text.' },
+                        { title: 'Customised Acrylic Frame', category: 'acrylic', imagepath: 'assets/hp_acrylic_frame_new.png', description: 'Premium acrylic frame with South Indian family portrait.' },
+                        { title: 'Family Collage Frame', category: 'collage', imagepath: 'assets/hp_family_collage_new.png', description: 'Beautiful collage frame featuring South Indian family moments.' },
+                        { title: 'Certificate Framing', category: 'certificate', imagepath: 'assets/hp_certificate_frame_new.png', description: 'Professional certificate frames for Karnataka institutions.' },
+                        { title: 'ID Cards & Tags', category: 'badges', imagepath: 'assets/hp_id_cards_new.png', description: 'Custom printed ID cards for South Indian companies and schools.' },
+                        { title: 'Passport & Visa Photo', category: 'passport', imagepath: 'assets/hp_passport_photo_new.png', description: 'Government-compliant passport and visa photos.' },
+                        { title: 'Badge Collection', category: 'badges', imagepath: 'assets/gallery_badges.png', description: 'Customized corporate identity badges.' },
+                        { title: 'Acrylic Frames', category: 'acrylic', imagepath: 'assets/gallery_acrylic.png', description: 'Modern transparent acrylic photo frames.' },
+                        { title: 'Collage Frames', category: 'collage', imagepath: 'assets/gallery_collage.png', description: 'Multi-photo collage frames for special memories.' },
+                        { title: 'Certificate Frames', category: 'certificate', imagepath: 'assets/gallery_certificate.png', description: 'Bulk framing for certificates and awards.' },
+                        { title: 'Passport Photos', category: 'passport', imagepath: 'assets/gallery_passport.png', description: 'Professional passport and ID photos.' },
+                        { title: 'Featured Photo Frame', category: 'collage', imagepath: 'assets/featured_photo_frame.png', description: 'Premium hand-crafted photo frame.' }
                     ];
                     const defaultCategories = [
-                        { name: 'handmade', type: 'gallery' },
                         { name: 'passport', type: 'gallery' },
                         { name: 'acrylic', type: 'gallery' },
-                        { name: 'bulk', type: 'gallery' }
+                        { name: 'collage', type: 'gallery' },
+                        { name: 'certificate', type: 'gallery' },
+                        { name: 'badges', type: 'gallery' },
+                        { name: 'corporate', type: 'gallery' }
                     ];
 
-                    try {
-                        const galRes = await fetch(window.APP_CONFIG.getApiUrl('/api/gallery?public=true'));
-                        if (galRes.ok) data = await galRes.json();
-                        else throw new Error('API down');
-                    } catch (e) { 
-                        console.error('Gallery Fetch Error, using fallbacks:', e); 
+                    // Use smartFetch: server → Supabase direct → fallback
+                    const liveData = await window.APP_CONFIG.smartFetch('gallery', true);
+                    if (liveData && liveData.length > 0) {
+                        data = liveData;
+                    } else {
+                        console.warn('Gallery: using static fallback');
                         data = defaultGallery;
                     }
 
-                    try {
-                        const catRes = await fetch(window.APP_CONFIG.getApiUrl('/api/categories'));
-                        if (catRes.ok) allCategories = await catRes.json();
-                        else throw new Error('API down');
-                    } catch (e) { 
-                        console.error('Categories Fetch Error, using fallbacks:', e);
+                    const liveCategories = await window.APP_CONFIG.smartFetch('categories', false);
+                    if (liveCategories && liveCategories.length > 0) {
+                        allCategories = liveCategories;
+                    } else {
                         allCategories = defaultCategories;
                     }
-                    
+
                     const galleryCategories = allCategories.filter(c => c.type === 'gallery');
 
                     grid.innerHTML = '';

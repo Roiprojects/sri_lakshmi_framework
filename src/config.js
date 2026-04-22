@@ -1,75 +1,126 @@
 /**
  * Configuration for Sri Lakshmi Studio
- * This file handles logic to ensure the frontend can communicate with the backend
- * regardless of whether it's running via a server or as local files.
+ * Handles API routing: server → Supabase direct → static fallback
  */
 
 const CONFIG = {
-    // Port should match the one in server.js
     PORT: 3000,
-    
-    /**
-     * Get the base URL for API calls.
-     * If running via file:// protocol, it defaults to http://localhost:PORT
-     */
+
+    // Supabase direct connection (used when server is offline)
+    SUPABASE_URL: 'https://ytajatxcbryruoqxkldb.supabase.co',
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0YWphdHhjYnJ5cnVvcXhrbGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMjAzNjcsImV4cCI6MjA5MDY5NjM2N30.mCJHKI8ixpzZRvWGo0bKUz8Q_b6GjTX_SEIKYtPnw7o',
+
     get API_BASE_URL() {
         if (window.location.protocol === 'file:') {
             return `http://localhost:${this.PORT}`;
         }
-        // If running via http (e.g. on Vercel or local server), use relative path
         return '';
     },
-    
-    /**
-     * Helper to get full API URL
-     */
+
     getApiUrl(endpoint) {
         const base = this.API_BASE_URL;
-        // Ensure endpoint starts with /
         const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
         return `${base}${formattedEndpoint}`;
     },
-    
+
     /**
-     * Helper to resolve asset URLs (images, etc)
-     * Handles prepending API_BASE_URL when running in file:// mode
+     * Smart fetch: tries local server first, falls back to direct Supabase query.
+     * section: 'gallery' | 'frames' | 'home_gallery' | 'hero_banners' | etc.
+     * onlyVisible: filter to is_visible=true records
      */
-    getAssetUrl: function(path) {
-        if (!path) return 'assets/placeholder.png';
-        if (path.startsWith('http')) return path;
-        
-        // Remove leading slash if present
-        const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-        
-        // If file protocol, use the local server as the source for all assets
-        if (window.location.protocol === 'file:') {
-            return `${this.API_BASE_URL}/${cleanPath}`;
+    async smartFetch(section, onlyVisible = true) {
+        // 1. Try local/Vercel server first
+        try {
+            const endpointMap = {
+                'gallery':          '/api/gallery',
+                'frames':           '/api/frames',
+                'home_gallery':     '/api/home-gallery',
+                'hero_banners':     '/api/hero_banners',
+                'testimonials':     '/api/testimonials',
+                'corporate_gifts':  '/api/corporate_gifts',
+                'categories':       '/api/categories',
+                'about':            '/api/about',
+            };
+            const endpoint = endpointMap[section] || `/api/${section}`;
+            const url = this.getApiUrl(endpoint) + (onlyVisible ? '?public=true' : '');
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 4000); // 4s timeout
+            const res = await fetch(url, { signal: ctrl.signal });
+            clearTimeout(timer);
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) return data;
+            }
+        } catch (e) {
+            console.warn(`Server fetch failed for "${section}", trying Supabase directly...`);
         }
-        
-        // Otherwise use relative path from root
-        return '/' + cleanPath;
+
+        // 2. Fallback: query Supabase REST API directly
+        try {
+            const supaUrl = `${this.SUPABASE_URL}/rest/v1/site_content`;
+            let params = `select=*&section=eq.${section}&order=created_at.desc`;
+            if (onlyVisible) params += '&is_visible=eq.true';
+
+            // Special case: frames also includes gallery items with frame-compatible categories
+            if (section === 'frames') {
+                params = `select=*&or=(section.eq.frames,and(section.eq.gallery,category.in.(passport,acrylic,collage,certificate,badges)))&order=created_at.desc`;
+                if (onlyVisible) params += '&is_visible=eq.true';
+            }
+
+            const res = await fetch(`${supaUrl}?${params}`, {
+                headers: {
+                    'apikey': this.SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    console.log(`✅ Loaded ${data.length} "${section}" items from Supabase directly`);
+                    return data;
+                }
+            }
+        } catch (e) {
+            console.warn(`Supabase direct fetch also failed:`, e);
+        }
+
+        return null; // Both failed — caller should use static fallback
     },
 
     /**
-     * Helper to resolve page URLs (navigation)
-     * Returns clean URLs for server mode, .html URLs for file mode
+     * Resolve image URL:
+     * - Full https:// URLs (Supabase Storage) returned as-is
+     * - Local assets/... paths returned relative (works without server)
      */
+    getAssetUrl: function(path) {
+        if (!path) return 'assets/placeholder.png';
+        if (path.startsWith('http')) return path; // Supabase Storage URL
+
+        const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+
+        if (cleanPath.startsWith('assets/')) {
+            // Always use relative path for local asset files
+            return window.location.protocol === 'file:' ? cleanPath : '/' + cleanPath;
+        }
+
+        if (window.location.protocol === 'file:') {
+            return `${this.API_BASE_URL}/${cleanPath}`;
+        }
+        return '/' + cleanPath;
+    },
+
     getPageUrl: function(pageName) {
-        // Handle home page
         if (pageName === 'index') {
             return window.location.protocol === 'file:' ? 'index.html' : '/';
         }
-        
-        // If file protocol, always include .html
-        if (window.location.protocol === 'file:') {
-            return pageName.endsWith('.html') ? pageName : pageName + '.html';
+        if (window.location.protocol !== 'file:') {
+            if (pageName === 'login') return '/admin';
+            if (pageName === 'admin') return '/dashboard';
+            return '/' + pageName.replace('.html', '');
         }
-        
-        // Otherwise use clean URL
-        const cleanName = pageName.replace('.html', '');
-        return '/' + cleanName;
+        return pageName.endsWith('.html') ? pageName : pageName + '.html';
     }
 };
 
-// Export to window for global access in HTML files
 window.APP_CONFIG = CONFIG;

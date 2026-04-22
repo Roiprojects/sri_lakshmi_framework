@@ -141,7 +141,10 @@
                     btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';
                 }
             } catch (err) {
-                errorMsg.innerHTML = '<i class="fas fa-wifi"></i> Network Error';
+                const isLocal = window.location.protocol === 'file:';
+                errorMsg.innerHTML = isLocal 
+                    ? '<i class="fas fa-server"></i> Local Server Not Running. Please run <code>node server.js</code>.' 
+                    : '<i class="fas fa-wifi"></i> Network Error';
                 errorMsg.style.display = 'block';
                 btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';
             }

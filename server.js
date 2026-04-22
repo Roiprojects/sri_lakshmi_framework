@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000;
 
 // Supabase Connection (Configured via Environment Variables)
 const supabaseUrl = process.env.SUPABASE_URL || 'https://ytajatxcbryruoqxkldb.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0YWphdHhjYnJ5cnVvcXhrbGRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMjAzNjcsImV4cCI6MjA5MDY5NjM2N30.mCJHKI8ixpzZRvWGo0bKUz8Q_b6GjTX_SEIKYtPnw7o';
 
 let supabase = null;
 if (supabaseUrl && supabaseKey) {
@@ -380,11 +380,15 @@ mainPages.forEach(page => {
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src', 'admin.html'));
+  res.sendFile(path.join(__dirname, 'src', 'login.html'));
 });
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src', 'login.html'));
+  res.redirect('/admin');
+});
+
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'admin.html'));
 });
 
 // Start Server only if running directly (not as a serverless function)

@@ -437,8 +437,8 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Upload Photo</label>
-                                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'galleryPreview')">
+                                <label>Upload Photo(s)</label>
+                                <input type="file" name="image" class="form-control" accept="image/*" multiple onchange="previewImage(this, 'galleryPreview')">
                                 <div id="galleryPreview" class="image-preview"></div>
                             </div>
                             <div class="form-group full"><label>Work/Project Description</label><textarea name="description" class="form-control" rows="2" required></textarea></div>
@@ -493,8 +493,8 @@
                             <div class="form-group"><label>Price/Promo Tag</label><input type="text" name="badgetext" class="form-control" placeholder="e.g. Starting at ₹99"></div>
                             <div class="form-group full"><label>Detailed Product Description</label><textarea name="description" class="form-control" rows="2"></textarea></div>
                             <div class="form-group full">
-                                <label>Upload Product Image</label>
-                                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'framesPreview')">
+                                <label>Upload Product Image(s)</label>
+                                <input type="file" name="image" class="form-control" accept="image/*" multiple onchange="previewImage(this, 'framesPreview')">
                                 <div id="framesPreview" class="image-preview"></div>
                             </div>
                         </div>
@@ -991,18 +991,24 @@
             } catch (e) {}
         }
 
-        // Image Preview logic
         function previewImage(input, previewId) {
             const preview = document.getElementById(previewId);
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML = `<img src="${e.target.result}">`;
-                    preview.style.display = 'flex';
-                }
-                reader.readAsDataURL(input.files[0]);
+            if (input.files && input.files.length > 0) {
+                preview.innerHTML = '';
+                preview.style.display = 'flex';
+                preview.style.flexWrap = 'wrap';
+                preview.style.gap = '10px';
+                
+                Array.from(input.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML += `<div style="position:relative;"><img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #ccc;"></div>`;
+                    }
+                    reader.readAsDataURL(file);
+                });
             } else {
                 preview.style.display = 'none';
+                preview.innerHTML = '';
             }
         }        // Edit Item logic
         async function editItem(type, id) {
@@ -1098,27 +1104,61 @@
                 
                 if (!await customConfirm(`Are you sure you want to ${isEdit ? 'update' : 'publish'} this ${type}?`)) return;
 
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEdit ? 'Updating...' : 'Uploading...'}`;
-                
                 try {
                     const url = isEdit ? `${endpoints[type]}/${window.editingState[type]}` : endpoints[type];
                     const method = isEdit ? 'PUT' : 'POST';
                     
-                    const res = await fetch(url, {
-                        method: method,
-                        headers: authHeaders,
-                        body: new FormData(e.target)
-                    });
+                    const fileInput = e.target.querySelector('input[type="file"]');
+                    const hasMultipleFiles = !isEdit && fileInput && fileInput.hasAttribute('multiple') && fileInput.files.length > 1;
 
-                    if (res.ok) {
-                        showToast(isEdit ? 'Changes saved!' : 'Successfully published!');
-                        cancelEdit(type);
-                        fetchData(type);
-                    } else if (res.status === 403) {
-                        logout();
+                    if (hasMultipleFiles) {
+                        const files = Array.from(fileInput.files);
+                        let successCount = 0;
+                        
+                        for (let i = 0; i < files.length; i++) {
+                            const formData = new FormData(e.target);
+                            formData.set('image', files[i]);
+                            
+                            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${i+1}/${files.length}...`;
+                            const res = await fetch(url, {
+                                method: method,
+                                headers: authHeaders,
+                                body: formData
+                            });
+                            
+                            if (res.ok) {
+                                successCount++;
+                            } else if (res.status === 403) {
+                                return logout();
+                            }
+                        }
+                        
+                        if (successCount > 0) {
+                            showToast(`Successfully published ${successCount} items!`);
+                            cancelEdit(type);
+                            fetchData(type);
+                        } else {
+                            alert('Operation failed for all items.');
+                        }
                     } else {
-                        const errData = await res.json();
-                        alert('Operation failed: ' + (errData.error || 'Unknown error'));
+                        // Standard single upload or edit
+                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEdit ? 'Updating...' : 'Uploading...'}`;
+                        const res = await fetch(url, {
+                            method: method,
+                            headers: authHeaders,
+                            body: new FormData(e.target)
+                        });
+
+                        if (res.ok) {
+                            showToast(isEdit ? 'Changes saved!' : 'Successfully published!');
+                            cancelEdit(type);
+                            fetchData(type);
+                        } else if (res.status === 403) {
+                            logout();
+                        } else {
+                            const errData = await res.json();
+                            alert('Operation failed: ' + (errData.error || 'Unknown error'));
+                        }
                     }
                 } catch(err) {
                     alert('Network error.');

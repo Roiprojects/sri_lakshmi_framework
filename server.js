@@ -28,16 +28,19 @@ app.use((req, res, next) => {
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl) or null (local file:// protocol)
     if (!origin || origin === 'null') {
       callback(null, true);
     } else {
-      callback(null, true); // For development, allow all origins
+      callback(null, true);
     }
   },
   credentials: true
 }));
 app.use(express.json());
+
+// Move static files to the TOP to resolve 404/MIME type issues on Vercel
+const srcPath = path.resolve(__dirname, 'src');
+app.use(express.static(srcPath, { extensions: ['html'] }));
 
 // Setup Multer for Memory Storage (Cloud Uploads)
 const storage = multer.memoryStorage();
@@ -353,10 +356,6 @@ app.post('/api/migrate-data', requireAuth, async (req, res) => {
 app.get('/api/settings', handleGetSettings);
 app.put('/api/settings/:id', requireAuth, handlePutSetting);
 app.post('/api/settings', requireAuth, handlePutSetting); // Allow POST as alias for update
-
-// Static files served AFTER API routes to prevent hanging/interference
-const srcPath = path.resolve(__dirname, 'src');
-app.use(express.static(srcPath, { extensions: ['html'] }));
 
 // Main Page Routes for Clean URLs
 app.get('/', (req, res) => {

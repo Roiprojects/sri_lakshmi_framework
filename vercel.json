@@ -3,11 +3,6 @@
   "cleanUrls": true,
   "rewrites": [
     { "src": "/api/(.*)", "dest": "/server.js" },
-    { "src": "/assets/(.*)", "dest": "/src/assets/$1" },
-    { "src": "/images/(.*)", "dest": "/src/images/$1" },
-    { "src": "/styles.css", "dest": "/src/styles.css" },
-    { "src": "/script.js", "dest": "/src/script.js" },
-    { "src": "/favicon.ico", "dest": "/src/assets/favicon.png" },
     { "src": "/(.*)", "dest": "/server.js" }
   ]
 }

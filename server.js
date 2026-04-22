@@ -39,7 +39,8 @@ app.use(cors({
 app.use(express.json());
 
 // Move static files to the TOP to resolve 404/MIME type issues on Vercel
-const srcPath = path.resolve(__dirname, 'src');
+// Using process.cwd() for reliable path resolution in serverless environments
+const srcPath = path.join(process.cwd(), 'src');
 app.use(express.static(srcPath, { extensions: ['html'] }));
 
 // Setup Multer for Memory Storage (Cloud Uploads)

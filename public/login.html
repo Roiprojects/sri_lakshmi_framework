@@ -55,7 +55,7 @@
         }
         .input-group input {
             width: 100%;
-            padding: 15px 15px 15px 45px;
+            padding: 15px 45px 15px 45px;
             background: rgba(0,0,0,0.2);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 8px;
@@ -64,6 +64,23 @@
             outline: none;
             box-sizing: border-box;
             transition: all 0.3s;
+        }
+        .toggle-eye {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 1rem;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .toggle-eye:hover {
+            color: #D4AF37;
         }
         .input-group input:focus {
             border-color: #D4AF37;
@@ -103,6 +120,9 @@
             <div class="input-group">
                 <i class="fas fa-lock"></i>
                 <input type="password" id="password" placeholder="Enter Secure Passcode" required>
+                <button type="button" class="toggle-eye" id="togglePassword" aria-label="Show password">
+                    <i class="fas fa-eye" id="eyeIcon"></i>
+                </button>
             </div>
             <button type="submit" class="btn-login" id="loginBtn">Authenticate <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
             <div class="error" id="errorMsg"><i class="fas fa-exclamation-circle"></i> Invalid Passcode</div>
@@ -115,6 +135,21 @@
         if (localStorage.getItem('adminToken')) {
             window.location.href = window.APP_CONFIG.getPageUrl('admin');
         }
+
+        // Show / hide password toggle
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const input = document.getElementById('password');
+            const icon  = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                this.setAttribute('aria-label', 'Hide password');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                this.setAttribute('aria-label', 'Show password');
+            }
+        });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();

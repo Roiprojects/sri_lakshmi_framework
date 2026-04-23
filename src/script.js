@@ -1,3 +1,13 @@
+// ============================================
+// Always scroll to top on page load / refresh
+// ============================================
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual'; // Disable browser scroll memory
+}
+window.addEventListener('load', () => {
+    window.scrollTo(0, 0);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Automatic Navigation Link Cleaning for Clean URLs
     if (window.location.protocol !== 'file:' && window.APP_CONFIG) {

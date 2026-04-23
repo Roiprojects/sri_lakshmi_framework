@@ -198,34 +198,21 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('corporate-grid');
-            
+
             const defaultProducts = [
                 { title: 'Custom Award Shield', description: 'Premium wooden award shield with metallic plaque for employee recognition.', imagepath: 'assets/corporate_gift_set.png', badgetext: 'Popular' },
                 { title: 'Executive Gifting Kit', description: 'Curated set including branded dairy, pen, and keychain in a premium box.', imagepath: 'assets/corporate_gifting_realistic.png', badgetext: 'New' }
             ];
 
-            try {
-                const response = await fetch(window.APP_CONFIG.getApiUrl('/api/corporate_gifts?public=true'));
-                let products = [];
-                if (response.ok) {
-                    products = await response.json();
-                } else {
-                    throw new Error('API down');
-                }
-                
-                if (!products || !Array.isArray(products) || products.length === 0) {
-                    products = defaultProducts;
-                }
-
-                grid.innerHTML = ''; // Clear spinner
-
+            const renderProducts = (products) => {
+                grid.innerHTML = '';
                 products.forEach(item => {
                     const img = window.APP_CONFIG.getAssetUrl(item.imagepath);
                     grid.innerHTML += `
                         <div class="corp-card reveal visible">
                             <div class="corp-img-wrapper">
                                 ${item.badgetext ? `<span class="corp-badge">${item.badgetext}</span>` : ''}
-                                <img src="${img}" alt="${item.title}" class="img-cover">
+                                <img src="${img}" alt="${item.title}" class="img-cover" onerror="this.src='assets/corporate_gift_set.png'">
                                 <div class="corp-overlay">
                                     <a href="contact.html?product=${encodeURIComponent(item.title)}" class="btn btn-primary" style="padding: 10px 20px;">Enquire Now</a>
                                 </div>
@@ -237,33 +224,14 @@
                         </div>
                     `;
                 });
+                if (typeof window.refreshReveal === 'function') window.refreshReveal();
+            };
 
-                // Re-trigger reveal animation for newly added elements
-                if (typeof window.refreshReveal === 'function') {
-                    window.refreshReveal();
-                }
-            } catch (err) {
-                console.warn('Corporate gifts fetch failed, using fallback:', err);
-                grid.innerHTML = '';
-                defaultProducts.forEach(item => {
-                    grid.innerHTML += `
-                        <div class="corp-card reveal visible">
-                            <div class="corp-img-wrapper">
-                                <span class="corp-badge">${item.badgetext}</span>
-                                <img src="${item.imagepath}" alt="${item.title}" class="img-cover">
-                                <div class="corp-overlay">
-                                    <a href="contact.html?product=${encodeURIComponent(item.title)}" class="btn btn-primary" style="padding: 10px 20px;">Enquire Now</a>
-                                </div>
-                            </div>
-                            <div class="corp-content">
-                                <h3>${item.title}</h3>
-                                <p>${item.description}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
+            // Fetch directly from Supabase using smartFetch
+            const products = await window.APP_CONFIG.smartFetch('corporate_gifts', true);
+            renderProducts(products && products.length > 0 ? products : defaultProducts);
         });
+
     </script>
 </body>
 </html>

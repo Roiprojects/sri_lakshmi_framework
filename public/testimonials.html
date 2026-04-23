@@ -126,7 +126,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const track = document.getElementById('testimonialsTrack');
-            
+
             const defaultTestimonials = [
                 { clientname: 'Ramesh Kumar', rating: 5, quote: 'Excellent framing work! Highly recommended for their professional approach and quality.', clientimage: 'assets/placeholder.png' },
                 { clientname: 'Priya S.', rating: 5, quote: 'Best place for corporate gifting solutions. They handled our bulk order perfectly and ahead of schedule.', clientimage: 'assets/placeholder.png' },
@@ -134,78 +134,37 @@
                 { clientname: 'Sunita Nair', rating: 5, quote: 'Amazing passport photo service. Quick and high quality prints.', clientimage: 'assets/placeholder.png' }
             ];
 
-            try {
-                const response = await fetch(window.APP_CONFIG.getApiUrl('/api/testimonials?public=true'));
-                let testimonials = [];
-                if (response.ok) {
-                    testimonials = await response.json();
-                } else {
-                    throw new Error('API down');
-                }
-                
-                if (!testimonials || !Array.isArray(testimonials) || testimonials.length === 0) {
-                    testimonials = defaultTestimonials;
-                }
-
-                track.innerHTML = ''; // Clear spinner
-
-                const renderCard = (t) => {
-                    const stars = Array(5).fill('<i class="far fa-star"></i>');
-                    const fullStars = Math.floor(t.rating);
-                    for(let i=0; i<fullStars; i++) stars[i] = '<i class="fas fa-star"></i>';
-                    if (t.rating % 1 !== 0) stars[fullStars] = '<i class="fas fa-star-half-alt"></i>';
-
-                    const img = window.APP_CONFIG.getAssetUrl(t.clientimage);
-                    return `
-                        <div class="testimonial-card-themed">
-                            <i class="fas fa-quote-right quote-icon"></i>
-                            <p class="testimonial-text">"${t.quote}"</p>
-                            <div class="client-info">
-                                <img src="${img}" alt="${t.clientname}" class="client-img aspect-avatar img-cover" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(t.clientname)}&background=random'">
-                                <div class="client-details">
-                                    <h4>${t.clientname}</h4>
-                                    <div class="rating">${stars.join('')}</div>
-                                </div>
+            const renderCard = (t) => {
+                const stars = Array(5).fill('<i class="far fa-star"></i>');
+                const fullStars = Math.floor(t.rating);
+                for (let i = 0; i < fullStars; i++) stars[i] = '<i class="fas fa-star"></i>';
+                if (t.rating % 1 !== 0) stars[fullStars] = '<i class="fas fa-star-half-alt"></i>';
+                const img = window.APP_CONFIG.getAssetUrl(t.clientimage);
+                return `
+                    <div class="testimonial-card-themed">
+                        <i class="fas fa-quote-right quote-icon"></i>
+                        <p class="testimonial-text">"${t.quote}"</p>
+                        <div class="client-info">
+                            <img src="${img}" alt="${t.clientname}" class="client-img aspect-avatar img-cover" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(t.clientname)}&background=random'">
+                            <div class="client-details">
+                                <h4>${t.clientname}</h4>
+                                <div class="rating">${stars.join('')}</div>
                             </div>
                         </div>
-                    `;
-                };
+                    </div>
+                `;
+            };
 
-                // Add original cards
-                testimonials.forEach(t => {
-                    track.innerHTML += renderCard(t);
-                });
+            // Fetch directly from Supabase using smartFetch
+            const testimonials = await window.APP_CONFIG.smartFetch('testimonials', true);
+            const list = (testimonials && testimonials.length > 0) ? testimonials : defaultTestimonials;
 
-                // Infinite Scroll Clones
-                testimonials.forEach(t => {
-                    track.innerHTML += renderCard(t);
-                });
-
-            } catch (err) {
-                console.warn('Testimonials fetch failed, using fallback:', err);
-                track.innerHTML = '';
-                const renderCard = (t) => {
-                    const stars = Array(5).fill('<i class="far fa-star"></i>');
-                    const fullStars = Math.floor(t.rating);
-                    for(let i=0; i<fullStars; i++) stars[i] = '<i class="fas fa-star"></i>';
-                    return `
-                        <div class="testimonial-card-themed">
-                            <i class="fas fa-quote-right quote-icon"></i>
-                            <p class="testimonial-text">"${t.quote}"</p>
-                            <div class="client-info">
-                                <img src="${t.clientimage}" alt="${t.clientname}" class="client-img aspect-avatar img-cover">
-                                <div class="client-details">
-                                    <h4>${t.clientname}</h4>
-                                    <div class="rating">${stars.join('')}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                };
-                defaultTestimonials.forEach(t => track.innerHTML += renderCard(t));
-                defaultTestimonials.forEach(t => track.innerHTML += renderCard(t));
-            }
+            track.innerHTML = '';
+            // Original cards + clones for infinite scroll
+            list.forEach(t => track.innerHTML += renderCard(t));
+            list.forEach(t => track.innerHTML += renderCard(t));
         });
+
     </script>
 </body>
 </html>

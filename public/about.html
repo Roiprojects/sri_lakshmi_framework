@@ -741,28 +741,24 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const res = await fetch(window.APP_CONFIG.getApiUrl('/api/about?public=true'));
-                const data = await res.json();
-                
+                const data = await window.APP_CONFIG.smartFetch('about', true);
+
                 if (data && data.length > 0) {
-                    // Assuming first image is Intro, second is Story, or using titles
-                    const introImg = data.find(i => i.title.toLowerCase().includes('studio') || i.title.toLowerCase().includes('intro'));
-                    const storyImg = data.find(i => i.title.toLowerCase().includes('story') || i.title.toLowerCase().includes('about'));
-                    
+                    const introImg = data.find(i => i.title && (i.title.toLowerCase().includes('studio') || i.title.toLowerCase().includes('intro')));
+                    const storyImg = data.find(i => i.title && (i.title.toLowerCase().includes('story') || i.title.toLowerCase().includes('about')));
+
                     if (introImg) {
-                        const path = introImg.imagepath.startsWith('http') ? introImg.imagepath : '/' + introImg.imagepath;
-                        document.getElementById('about-intro-img').src = path;
+                        document.getElementById('about-intro-img').src = window.APP_CONFIG.getAssetUrl(introImg.imagepath);
                     }
-                    
                     if (storyImg) {
-                        const path = storyImg.imagepath.startsWith('http') ? storyImg.imagepath : '/' + storyImg.imagepath;
-                        document.getElementById('about-story-img').src = path;
+                        document.getElementById('about-story-img').src = window.APP_CONFIG.getAssetUrl(storyImg.imagepath);
                     }
                 }
             } catch (err) {
                 console.error("Error loading About page content:", err);
             }
         });
+
     </script>
 </body>
 </html>

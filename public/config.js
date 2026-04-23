@@ -29,41 +29,36 @@ const CONFIG = {
      * onlyVisible: filter to is_visible=true records
      */
     async smartFetch(section, onlyVisible = true) {
-        // 1. Try local/Vercel server first
-        try {
-            const endpointMap = {
-                'gallery':          '/api/gallery',
-                'frames':           '/api/frames',
-                'home_gallery':     '/api/home-gallery',
-                'hero_banners':     '/api/hero_banners',
-                'testimonials':     '/api/testimonials',
-                'corporate_gifts':  '/api/corporate_gifts',
-                'categories':       '/api/categories',
-                'about':            '/api/about',
-            };
-            const endpoint = endpointMap[section] || `/api/${section}`;
-            const url = this.getApiUrl(endpoint) + (onlyVisible ? '?public=true' : '');
-            const ctrl = new AbortController();
-            const timer = setTimeout(() => ctrl.abort(), 4000); // 4s timeout
-            const res = await fetch(url, { signal: ctrl.signal });
-            clearTimeout(timer);
-            if (res.ok) {
-                const data = await res.json();
-                if (Array.isArray(data) && data.length > 0) return data;
-            }
-        } catch (e) {
-            console.warn(`Server fetch failed for "${section}", trying Supabase directly...`);
-        }
+        // Map each section to its real Supabase table
+        const tableMap = {
+            'gallery':         'gallery',
+            'frames':          'frames',
+            'testimonials':    'testimonials',
+            'corporate_gifts': 'corporate_gifts',
+            'hero_banners':    'hero_banners',
+            'home_gallery':    'site_content',
+            'about':           'site_content',
+            'categories':      'categories',
+        };
 
-        // 2. Fallback: query Supabase REST API directly
+        const table = tableMap[section] || section;
+
+        // Query Supabase REST API directly
         try {
-            const supaUrl = `${this.SUPABASE_URL}/rest/v1/site_content`;
-            let params = `select=*&section=eq.${section}&order=created_at.desc`;
+            const supaUrl = `${this.SUPABASE_URL}/rest/v1/${table}`;
+
+            // site_content stores multiple sections — filter by section column
+            // All other tables are single-purpose — no section filter needed
+            let params = (table === 'site_content')
+                ? `select=*&section=eq.${section}&order=created_at.desc`
+                : `select=*&order=created_at.desc`;
+
             if (onlyVisible) params += '&is_visible=eq.true';
 
-            // Special case: frames also includes gallery items with frame-compatible categories
+            // Special case: frames page also shows gallery items with frame-type categories
             if (section === 'frames') {
-                params = `select=*&or=(section.eq.frames,and(section.eq.gallery,category.in.(passport,acrylic,collage,certificate,badges)))&order=created_at.desc`;
+                // Query only the frames table
+                params = `select=*&order=created_at.desc`;
                 if (onlyVisible) params += '&is_visible=eq.true';
             }
 
@@ -77,15 +72,15 @@ const CONFIG = {
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data) && data.length > 0) {
-                    console.log(`✅ Loaded ${data.length} "${section}" items from Supabase directly`);
+                    console.log(`✅ Loaded ${data.length} "${section}" items from Supabase (table: ${table})`);
                     return data;
                 }
             }
         } catch (e) {
-            console.warn(`Supabase direct fetch also failed:`, e);
+            console.warn(`Supabase fetch failed for "${section}":`, e);
         }
 
-        return null; // Both failed — caller should use static fallback
+        return null; // Caller should use static fallback
     },
 
     /**

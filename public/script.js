@@ -273,15 +273,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!heroSection) return;
 
         try {
-            const url = window.APP_CONFIG ? window.APP_CONFIG.getApiUrl('/api/hero_banners?public=true') : '/api/hero_banners?public=true';
-            const res = await fetch(url);
-            const banners = await res.json();
+            const banners = await window.APP_CONFIG.smartFetch('hero_banners', true);
 
-            // Defensive Check
             if (banners && Array.isArray(banners) && banners.length > 0) {
                 // Remove existing slides except controls
-                const existingSlides = heroSection.querySelectorAll('.slide');
-                existingSlides.forEach(s => s.remove());
+                heroSection.querySelectorAll('.slide').forEach(s => s.remove());
 
                 const dotsContainer = heroSection.querySelector('.slider-controls');
                 if (dotsContainer) dotsContainer.innerHTML = '';
@@ -289,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 banners.forEach((banner, i) => {
                     const bannerImg = banner.imagepath || 'assets/placeholder.png';
                     const img = window.APP_CONFIG.getAssetUrl(bannerImg);
-                    
+
                     // Add Slide
                     const slide = document.createElement('div');
                     slide.className = `slide ${i === 0 ? 'active' : ''}`;
@@ -304,7 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     `;
-                    // Insert before arrows/dots
                     heroSection.insertBefore(slide, heroSection.querySelector('.prev-arrow'));
 
                     // Add Dot
@@ -318,12 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 initHeroSlider();
             } else {
-                console.log('No banners found or invalid format, using defaults.');
+                console.log('No hero banners found, using defaults.');
                 initHeroSlider();
             }
         } catch (err) {
             console.error('Failed to load hero banners:', err);
-            initHeroSlider(); // Fallback to whatever is there
+            initHeroSlider();
         }
     };
 
@@ -451,38 +446,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================
     const fetchSiteSettings = async () => {
         try {
-            const url = window.APP_CONFIG ? window.APP_CONFIG.getApiUrl('/api/settings') : '/api/settings';
-            const res = await fetch(url);
-            const settings = await res.json();
-            
-            if (settings && typeof settings === 'object') {
-                if (settings.phone) {
-                    // Update text displays
-                    document.querySelectorAll('.dynamic-phone-text').forEach(el => el.textContent = settings.phone);
-                    // Update tel links
-                    const cleanPhone = settings.phone.replace(/\D/g, '');
-                    document.querySelectorAll('a[href^="tel:"]').forEach(el => {
-                        if (!el.href.includes('wa.me')) el.href = `tel:${cleanPhone}`;
-                    });
+            const res = await fetch(
+                `${window.APP_CONFIG.SUPABASE_URL}/rest/v1/settings?select=id,value`,
+                {
+                    headers: {
+                        'apikey': window.APP_CONFIG.SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${window.APP_CONFIG.SUPABASE_ANON_KEY}`
+                    }
                 }
-                
-                if (settings.whatsapp) {
-                    const cleanWA = settings.whatsapp.replace(/\D/g, '');
-                    // Update all WhatsApp links
-                    document.querySelectorAll('a[href*="wa.me"]').forEach(el => {
-                        el.href = `https://wa.me/${cleanWA}`;
-                    });
-                }
+            );
+            if (!res.ok) return;
+            const rows = await res.json(); // [{id:'phone',value:'...'}, ...]
+            const settings = {};
+            rows.forEach(r => { settings[r.id] = r.value; });
 
-                if (settings.email) {
-                    document.querySelectorAll('.dynamic-email-text').forEach(el => el.textContent = settings.email);
-                    document.querySelectorAll('a[href^="mailto:"]').forEach(el => el.href = `mailto:${settings.email}`);
-                }
+            if (settings.phone) {
+                document.querySelectorAll('.dynamic-phone-text').forEach(el => el.textContent = settings.phone);
+                const cleanPhone = settings.phone.replace(/\D/g, '');
+                document.querySelectorAll('a[href^="tel:"]').forEach(el => {
+                    if (!el.href.includes('wa.me')) el.href = `tel:${cleanPhone}`;
+                });
+            }
+
+            if (settings.whatsapp) {
+                const cleanWA = settings.whatsapp.replace(/\D/g, '');
+                document.querySelectorAll('a[href*="wa.me"]').forEach(el => {
+                    el.href = `https://wa.me/${cleanWA}`;
+                });
+            }
+
+            if (settings.email) {
+                document.querySelectorAll('.dynamic-email-text').forEach(el => el.textContent = settings.email);
+                document.querySelectorAll('a[href^="mailto:"]').forEach(el => el.href = `mailto:${settings.email}`);
             }
         } catch (err) {
             console.error('Failed to load site settings:', err);
         }
     };
+
     
     fetchSiteSettings();
 });

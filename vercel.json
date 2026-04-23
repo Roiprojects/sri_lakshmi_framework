@@ -1,15 +1,15 @@
 {
-  "version": 2,
   "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
-    { "src": "/api/(.*)", "dest": "/server.js" },
-    { "src": "/admin", "dest": "/public/login.html" },
-    { "src": "/dashboard", "dest": "/public/admin.html" },
-    { "src": "/gallery", "dest": "/public/gallery.html" },
-    { "src": "/about", "dest": "/public/about.html" },
-    { "src": "/contact", "dest": "/public/contact.html" },
-    { "src": "/frames", "dest": "/public/frames.html" },
-    { "src": "/testimonials", "dest": "/public/testimonials.html" },
-    { "src": "/(.*)", "dest": "/server.js" }
+    { "source": "/admin",            "destination": "/admin.html" },
+    { "source": "/login",            "destination": "/login.html" },
+    { "source": "/about",            "destination": "/about.html" },
+    { "source": "/gallery",          "destination": "/gallery.html" },
+    { "source": "/frames",           "destination": "/frames.html" },
+    { "source": "/contact",          "destination": "/contact.html" },
+    { "source": "/testimonials",     "destination": "/testimonials.html" },
+    { "source": "/corporate-gifting","destination": "/corporate-gifting.html" },
+    { "source": "/policy",           "destination": "/policy.html" }
   ]
 }

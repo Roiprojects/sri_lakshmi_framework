@@ -115,8 +115,6 @@ const CONFIG = {
             return window.location.protocol === 'file:' ? 'index.html' : '/';
         }
         if (window.location.protocol !== 'file:') {
-            if (pageName === 'login') return '/admin';
-            if (pageName === 'admin') return '/dashboard';
             return '/' + pageName.replace('.html', '');
         }
         return pageName.endsWith('.html') ? pageName : pageName + '.html';

@@ -147,19 +147,27 @@
             <div class="container">
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <span class="stat-number" data-count="5000">0</span><span>+</span>
+                        <div class="stat-value">
+                            <span class="stat-number" data-count="5000">0</span><span class="stat-suffix">+</span>
+                        </div>
                         <span class="stat-label">Frames Delivered</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number" data-count="200">0</span><span>+</span>
+                        <div class="stat-value">
+                            <span class="stat-number" data-count="200">0</span><span class="stat-suffix">+</span>
+                        </div>
                         <span class="stat-label">Corporate Clients</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number" data-count="9">0</span><span>+</span>
+                        <div class="stat-value">
+                            <span class="stat-number" data-count="9">0</span><span class="stat-suffix">+</span>
+                        </div>
                         <span class="stat-label">Years Experience</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number" data-count="100">0</span><span>%</span>
+                        <div class="stat-value">
+                            <span class="stat-number" data-count="100">0</span><span class="stat-suffix">%</span>
+                        </div>
                         <span class="stat-label">Satisfaction Rate</span>
                     </div>
                 </div>
@@ -427,8 +435,8 @@
             <div class="footer-col contact-col">
                 <h4>Contact Details</h4>
                 <p><i class="fas fa-map-marker-alt"></i> 1/4 Th Main, Nehru Nagar Near Sheshadripuram College,<br>Sheshadripuram, Bangalore, India 560020</p>
-                <p><i class="fas fa-phone-alt"></i> <span class="dynamic-phone-text">+91 89714 88451</span></p>
-                <p><i class="fas fa-envelope"></i> sudhakarjack123@gmail.com</p>
+                <p><i class="fas fa-phone-alt"></i> <a href="tel:+918971488451"><span class="dynamic-phone-text">+91 89714 88451</span></a></p>
+                <p><i class="fas fa-envelope"></i> <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sudhakarjack123@gmail.com" target="_blank">sudhakarjack123@gmail.com</a></p>
                 <p><i class="fas fa-clock"></i> Mon–Sat: 7:30 AM – 10:00 PM<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sun: 7:30 AM – 4:00 PM</p>
             </div>
         </div>
@@ -491,7 +499,8 @@
                     const stars = Array(5).fill('<i class="far fa-star"></i>');
                     const full = Math.floor(t.rating || 0);
                     for(let i=0; i<full; i++) stars[i] = '<i class="fas fa-star"></i>';
-                    const img = window.APP_CONFIG.getAssetUrl(t.clientimage);
+                    const imgUrl = t.clientimage || t.imagepath || '';
+                    const img = window.APP_CONFIG.getAssetUrl(imgUrl);
                     return `
                         <div class="testimonial-card-themed">
                             <i class="fas fa-quote-right quote-icon"></i>

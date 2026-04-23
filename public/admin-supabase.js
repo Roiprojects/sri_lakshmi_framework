@@ -274,24 +274,44 @@ function attachForm(formId, type) {
         try {
             const buildPayload = async (fileOverride) => {
                 const p = {};
-                new FormData(e.target).forEach((v,k) => { if (k !== 'image') p[k] = v; });
+                new FormData(e.target).forEach((v,k) => { 
+                    if (k === 'image') return; 
+                    // Convert rating to number if present
+                    if (k === 'rating') p[k] = Number(v);
+                    else p[k] = v;
+                });
                 if (SECTION[type]) p.section = SECTION[type];
+                
                 const fileInput = e.target.querySelector('input[type="file"]');
                 const file = fileOverride || (fileInput && fileInput.files[0]);
-                if (file) { btn.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin"></i> Uploading image...'; p.imagepath = await uploadFile(file); }
+                if (file) { 
+                    btn.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin"></i> Uploading image...'; 
+                    const uploadedUrl = await uploadFile(file);
+                    // Testimonials table uses 'clientimage' column, others use 'imagepath'
+                    if (type === 'testimonials') p.clientimage = uploadedUrl;
+                    else p.imagepath = uploadedUrl;
+                }
                 return p;
             };
             const fileInput  = e.target.querySelector('input[type="file"]');
             const multiFiles = !isEdit && fileInput && fileInput.hasAttribute('multiple') && fileInput.files.length > 1;
             if (multiFiles) {
                 const files = Array.from(fileInput.files); let ok = 0;
-                for (let i = 0; i < files.length; i++) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${i+1}/${files.length}...`; await dbInsert(TABLE[type], await buildPayload(files[i])); ok++; }
+                for (let i = 0; i < files.length; i++) { 
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${i+1}/${files.length}...`; 
+                    const payload = await buildPayload(files[i]);
+                    payload.is_visible = true; // New items are live by default
+                    await dbInsert(TABLE[type], payload); 
+                    ok++; 
+                }
                 showToast(`Published ${ok} items!`);
             } else if (isEdit) {
                 await dbPatch(TABLE[type], window.editingState[type], await buildPayload(null));
                 showToast('Changes saved!');
             } else {
-                await dbInsert(TABLE[type], await buildPayload(null));
+                const payload = await buildPayload(null);
+                payload.is_visible = true; // New items are live by default
+                await dbInsert(TABLE[type], payload);
                 showToast('Published successfully!');
             }
             cancelEdit(type); fetchData(type);

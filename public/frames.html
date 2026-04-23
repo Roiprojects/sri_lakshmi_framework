@@ -458,8 +458,8 @@
             <div class="footer-col contact-col">
                 <h4>Contact Details</h4>
                 <p><i class="fas fa-map-marker-alt"></i> 1/4 Th Main, Nehru Nagar Near Sheshadripuram College,<br>Sheshadripuram, Bangalore, India 560020</p>
-                <p><i class="fas fa-phone-alt"></i> +91 89714 88451, +91 81979 89727</p>
-                <p><i class="fas fa-envelope"></i> sudhakarjack123@gmail.com</p>
+                <p><i class="fas fa-phone-alt"></i> <a href="tel:+918971488451">+91 89714 88451</a>, <a href="tel:+918197989727">+91 81979 89727</a></p>
+                <p><i class="fas fa-envelope"></i> <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sudhakarjack123@gmail.com" target="_blank">sudhakarjack123@gmail.com</a></p>
                 <p><i class="fas fa-clock"></i> Mon–Sat: 7:30 AM – 10:00 PM<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sun: 7:30 AM – 4:00 PM</p>
             </div>
         </div>
@@ -546,7 +546,11 @@
                         'badges': 'badges-frames',
                         'certificate': 'bulk-certificate'
                     };
-                    const normalizeCat = (cat) => categoryMapping[cat] || cat;
+                    const normalizeCat = (cat) => {
+                        if (!cat) return 'other';
+                        const low = cat.toLowerCase();
+                        return categoryMapping[low] || cat;
+                    };
 
                     const managedCats = {};
                     let catIdx = 1;
@@ -607,7 +611,8 @@
                                 </div>
                                 <div class="frames-grid">
                                     ${framesResult.length > 0 ? framesResult.map(f => {
-                                        const img = window.APP_CONFIG.getAssetUrl(f.imagepath);
+                                        const imgUrl = f.imagepath || f.clientimage || '';
+                                        const img = window.APP_CONFIG.getAssetUrl(imgUrl);
                                         const desc = f.description || 'Premium quality frame';
                                         return `
                                         <div class="frame-card">

@@ -57,9 +57,40 @@ const CONFIG = {
 
             // Special case: frames page also shows gallery items with frame-type categories
             if (section === 'frames') {
-                // Query only the frames table
-                params = `select=*&order=created_at.desc`;
-                if (onlyVisible) params += '&is_visible=eq.true';
+                const queryParams = `select=*&order=created_at.desc${onlyVisible ? '&is_visible=eq.true' : ''}`;
+                
+                // Fetch from both frames and gallery tables in parallel
+                const [fRes, gRes] = await Promise.all([
+                    fetch(`${this.SUPABASE_URL}/rest/v1/frames?${queryParams}`, {
+                        headers: { 'apikey': this.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}` }
+                    }),
+                    fetch(`${this.SUPABASE_URL}/rest/v1/gallery?${queryParams}`, {
+                        headers: { 'apikey': this.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}` }
+                    })
+                ]);
+
+                let framesData = fRes.ok ? await fRes.json() : [];
+                let galleryData = gRes.ok ? await gRes.json() : [];
+
+                // These categories from the gallery should also appear in the frames catalog
+                const frameRelevantCats = [
+                    'passport', 'acrylic', 'collage', 'certificate', 'badges', 'id-cards',
+                    'passport-frames', 'acrylic-frames', 'collage-frames', 'bulk-certificate', 'badges-frames', 'id-cards-and-tags'
+                ];
+                const filteredGallery = galleryData.filter(item => {
+                    if (!item.category) return false;
+                    const catLower = item.category.toLowerCase();
+                    return frameRelevantCats.some(c => c.toLowerCase() === catLower);
+                });
+
+                // Merge datasets. Gallery items won't have badgetext, which is handled by the frames.html template.
+                const combined = [...framesData, ...filteredGallery];
+                
+                if (combined.length > 0) {
+                    console.log(`✅ Loaded ${combined.length} combined items (Frames: ${framesData.length}, Gallery Sync: ${filteredGallery.length})`);
+                    return combined;
+                }
+                return null;
             }
 
             const res = await fetch(`${supaUrl}?${params}`, {

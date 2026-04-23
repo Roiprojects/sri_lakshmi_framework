@@ -112,8 +112,8 @@
             <div class="footer-col contact-col">
                 <h4>Contact Details</h4>
                 <p><i class="fas fa-map-marker-alt"></i> 1/4 Th Main, Nehru Nagar Near Sheshadripuram College,<br>Sheshadripuram, Bangalore, India 560020</p>
-                <p><i class="fas fa-phone-alt"></i> <span class="dynamic-phone-text">+91 89714 88451</span></p>
-                <p><i class="fas fa-envelope"></i> sudhakarjack123@gmail.com</p>
+                <p><i class="fas fa-phone-alt"></i> <a href="tel:+918971488451"><span class="dynamic-phone-text">+91 89714 88451</span></a></p>
+                <p><i class="fas fa-envelope"></i> <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sudhakarjack123@gmail.com" target="_blank">sudhakarjack123@gmail.com</a></p>
             </div>
         </div>
         <div class="footer-bottom">
@@ -139,7 +139,8 @@
                 const fullStars = Math.floor(t.rating);
                 for (let i = 0; i < fullStars; i++) stars[i] = '<i class="fas fa-star"></i>';
                 if (t.rating % 1 !== 0) stars[fullStars] = '<i class="fas fa-star-half-alt"></i>';
-                const img = window.APP_CONFIG.getAssetUrl(t.clientimage);
+                const imgUrl = t.clientimage || t.imagepath || '';
+                const img = window.APP_CONFIG.getAssetUrl(imgUrl);
                 return `
                     <div class="testimonial-card-themed">
                         <i class="fas fa-quote-right quote-icon"></i>

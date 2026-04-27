@@ -2495,11 +2495,11 @@ img {
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-/* --- Inquiry CTA Strip --- */
+/* --- Enquiry CTA Strip --- */
 .inquiry-strip {
     background: linear-gradient(135deg, var(--secondary-color), #f0c842 60%, #c49a45);
     padding: 60px 20px;
-    text-align: left;
+    text-align: center;
 }
 .inquiry-strip h2 {
     color: var(--primary-color);
@@ -2532,7 +2532,7 @@ img {
 .inquiry-strip-buttons {
     display: flex;
     gap: 16px;
-    justify-content: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
 }
 

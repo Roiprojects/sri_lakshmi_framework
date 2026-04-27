@@ -6,6 +6,7 @@
     <title>Admin Login | Lakshmi Frameworks</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <style>
         body {
             margin: 0; padding: 0;
@@ -118,6 +119,10 @@
         
         <form id="loginForm">
             <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="userId" placeholder="Enter User ID" required>
+            </div>
+            <div class="input-group">
                 <i class="fas fa-lock"></i>
                 <input type="password" id="password" placeholder="Enter Secure Passcode" required>
                 <button type="button" class="toggle-eye" id="togglePassword" aria-label="Show password">
@@ -125,7 +130,7 @@
                 </button>
             </div>
             <button type="submit" class="btn-login" id="loginBtn">Authenticate <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
-            <div class="error" id="errorMsg"><i class="fas fa-exclamation-circle"></i> Invalid Passcode</div>
+            <div class="error" id="errorMsg"><i class="fas fa-exclamation-circle"></i> Invalid Credentials</div>
         </form>
     </div>
 
@@ -153,6 +158,7 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const userId = document.getElementById('userId').value;
             const password = document.getElementById('password').value;
             const btn = document.getElementById('loginBtn');
             const errorMsg = document.getElementById('errorMsg');
@@ -160,26 +166,40 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
             errorMsg.style.display = 'none';
             
+            // Hardcoded authentication as requested
+            if (userId === "Sl frame" && password === "JACK@-9988") {
+                // Simulate a small delay for premium feel
+                setTimeout(() => {
+                    localStorage.setItem('adminToken', 'sl-frame-secure-session');
+                    window.location.href = window.APP_CONFIG.getPageUrl('admin');
+                }, 800);
+                return;
+            }
+
+            // Fallback for other potential credentials or server-side sync
             try {
                 const res = await fetch(window.APP_CONFIG.getApiUrl('/api/login'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password })
+                    body: JSON.stringify({ userId, password })
                 });
-                const data = await res.json();
                 
-                if (data.success) {
-                    localStorage.setItem('adminToken', data.token);
-                    window.location.href = window.APP_CONFIG.getPageUrl('admin');
-                } else {
-                    errorMsg.style.display = 'block';
-                    btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        localStorage.setItem('adminToken', data.token);
+                        window.location.href = window.APP_CONFIG.getPageUrl('admin');
+                        return;
+                    }
                 }
+                
+                errorMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid User ID or Passcode';
+                errorMsg.style.display = 'block';
+                btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';
+                
             } catch (err) {
-                const isLocal = window.location.protocol === 'file:';
-                errorMsg.innerHTML = isLocal 
-                    ? '<i class="fas fa-server"></i> Local Server Not Running. Please run <code>node server.js</code>.' 
-                    : '<i class="fas fa-wifi"></i> Network Error';
+                // If no server is running and hardcoded check failed
+                errorMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid User ID or Passcode';
                 errorMsg.style.display = 'block';
                 btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';
             }

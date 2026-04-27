@@ -471,6 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (settings.whatsapp) {
                 const cleanWA = settings.whatsapp.replace(/\D/g, '');
                 document.querySelectorAll('a[href*="wa.me"]').forEach(el => {
+                    if (el.textContent.includes('ROI Infotech')) return;
                     el.href = `https://wa.me/${cleanWA}`;
                 });
             }

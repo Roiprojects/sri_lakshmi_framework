@@ -20,12 +20,11 @@ const TABLE = {
     corporate_gifts: 'corporate_gifts',
     hero_banners:    'hero_banners',
     home_gallery:    'site_content',
-    about:           'site_content',
     categories:      'categories'
 };
 
 // site_content rows that need a section= filter
-const SECTION = { home_gallery: 'home_gallery', about: 'about' };
+const SECTION = { home_gallery: 'home_gallery' };
 
 // ── REST helpers ─────────────────────────────────────────────────────────────
 async function dbGet(table, params) {
@@ -226,7 +225,7 @@ async function editItem(type, id) {
     try {
         const data = await dbGet(TABLE[type], `id=eq.${id}`);
         const item = data[0]; if (!item) return;
-        const formMap = { corporate_gifts:'corporate', hero_banners:'heroBanners', home_gallery:'homeGallery', about:'about' };
+        const formMap = { corporate_gifts:'corporate', hero_banners:'heroBanners', home_gallery:'homeGallery' };
         const formId  = formMap[type] || type;
         const form    = document.getElementById(`${formId}Form`);
         window.editingState[type] = id;
@@ -246,13 +245,13 @@ function cancelEdit(type) {
     window.editingState[type] = null;
     const ind = document.getElementById(`${type}EditIndicator`);
     if (ind) ind.style.display = 'none';
-    const formMap = { corporate_gifts:'corporate', hero_banners:'heroBanners', home_gallery:'homeGallery', about:'about' };
+    const formMap = { corporate_gifts:'corporate', hero_banners:'heroBanners', home_gallery:'homeGallery' };
     const formId  = formMap[type] || type;
     const form = document.getElementById(`${formId}Form`);
     if (form) form.reset();
     const btn = document.getElementById(`${formId}SubmitBtn`);
     if (btn) {
-        const labels = { gallery:'Add to Full Gallery', frames:'Add New Product', hero_banners:'Save Hero Banner', home_gallery:'Add to Home Preview', about:'Save About Content', corporate_gifts:'Publish Corporate Item', testimonials:'Publish Testimonial' };
+        const labels = { gallery:'Add to Full Gallery', frames:'Add New Product', hero_banners:'Save Hero Banner', home_gallery:'Add to Home Preview', corporate_gifts:'Publish Corporate Item', testimonials:'Publish Testimonial' };
         btn.innerHTML = `<i class="fas fa-plus"></i> ${labels[type]||'Publish Item'}`;
     }
     const previewId = `${type==='corporate_gifts'?'corporate':(type==='hero_banners'?'hero':type)}Preview`;
@@ -345,7 +344,7 @@ const TITLES = {
     frames:'Frames & Products', frame_categories:'Frame Categories',
     testimonials:'Client Reviews', corporate_gifts:'Corporate Options',
     hero_banners:'Home Hero Banners', settings:'Site-Wide Settings',
-    home_gallery:'Home Preview Items', about:'About Page Content'
+    home_gallery:'Home Preview Items'
 };
 
 document.querySelectorAll('.nav-link').forEach(link => {
@@ -376,7 +375,7 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-window.editingState = { gallery:null, frames:null, testimonials:null, corporate_gifts:null, hero_banners:null, home_gallery:null, about:null };
+window.editingState = { gallery:null, frames:null, testimonials:null, corporate_gifts:null, hero_banners:null, home_gallery:null };
 
 attachForm('galleryForm',     'gallery');
 attachForm('framesForm',      'frames');
@@ -384,7 +383,7 @@ attachForm('testimonialsForm','testimonials');
 attachForm('corporateForm',   'corporate_gifts');
 attachForm('heroBannersForm', 'hero_banners');
 attachForm('homeGalleryForm', 'home_gallery');
-attachForm('aboutForm',       'about');
+
 
 fetchData('home_gallery');
 fetchCategories();

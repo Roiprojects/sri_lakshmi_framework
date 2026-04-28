@@ -369,7 +369,7 @@
             <div class="nav-link" data-target="frame_categories"><i class="fas fa-list-ul"></i> Frames Categories</div>
             <div class="nav-link" data-target="corporate_gifts"><i class="fas fa-gift"></i> Corporate Gifts</div>
             <div class="nav-link" data-target="hero_banners"><i class="fas fa-desktop"></i> Hero Banners</div>
-            <div class="nav-link" data-target="about"><i class="fas fa-info-circle"></i> About Page</div>
+
             <div class="nav-link" data-target="settings"><i class="fas fa-cog"></i> Site Settings</div>
         </div>
         <div class="sidebar-footer">
@@ -609,31 +609,7 @@
                 <div class="data-grid" id="hero_bannersGrid"></div>
             </div>
 
-            <!-- ABOUT PAGE TAB -->
-            <div id="about" class="tab-content">
-                <div class="premium-card">
-                    <div class="card-header"><h2>Manage About Page Content</h2></div>
-                    <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-light);">Update images and banners specifically for the "About Us" page. Use this for the "Our Story" image and mission sections.</p>
-                    <div id="aboutEditIndicator" class="edit-mode-indicator">
-                        <span><i class="fas fa-edit"></i> You are currently editing about content</span>
-                        <button type="button" class="btn-cancel" onclick="cancelEdit('about')">Cancel Edit</button>
-                    </div>
-                    <form id="aboutForm">
-                        <div class="form-grid">
-                            <div class="form-group full"><label>Section Title/Reference</label><input type="text" name="title" class="form-control" placeholder="e.g. Our Story Image" required></div>
-                            <div class="form-group full"><label>Context/Alt Text</label><input type="text" name="description" class="form-control"></div>
-                            <div class="form-group full">
-                                <label>Upload Image</label>
-                                <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'aboutPreview')">
-                                <div id="aboutPreview" class="image-preview"></div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary" id="aboutSubmitBtn"><i class="fas fa-info-circle" style="margin-right: 8px;"></i> Save About Content</button>
-                    </form>
-                </div>
-                <div class="data-header"><h2>Live About Page Media</h2></div>
-                <div class="data-grid" id="aboutGrid"></div>
-            </div>
+
 
             <!-- SETTINGS TAB -->
             <div id="settings" class="tab-content">

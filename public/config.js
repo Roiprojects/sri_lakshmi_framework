@@ -55,8 +55,8 @@ const CONFIG = {
 
             if (onlyVisible) params += '&is_visible=eq.true';
 
-            // Special case: frames page also shows gallery items with frame-type categories
-            if (section === 'frames') {
+            // Special case: gallery and frames pages both show a combined view to ensure no duplicates and full visibility
+            if (section === 'frames' || section === 'gallery') {
                 const queryParams = `select=*&order=created_at.desc${onlyVisible ? '&is_visible=eq.true' : ''}`;
                 
                 // Fetch from both frames and gallery tables in parallel
@@ -68,31 +68,49 @@ const CONFIG = {
                         headers: { 'apikey': this.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}` }
                     })
                 ]);
-
+ 
                 let framesData = fRes.ok ? await fRes.json() : [];
                 let galleryData = gRes.ok ? await gRes.json() : [];
-
+ 
                 // These categories from the gallery should also appear in the frames catalog
                 const frameRelevantCats = [
-                    'passport', 'acrylic', 'collage', 'certificate', 'badges', 'id-cards',
-                    'passport-frames', 'acrylic-frames', 'collage-frames', 'bulk-certificate', 'badges-frames', 'id-cards-and-tags'
+                    'passport', 'acrylic', 'collage', 'certificate', 'badges', 'id-cards', 'id cards',
+                    'passport-frames', 'acrylic-frames', 'collage-frames', 'bulk-certificate', 'badges-frames', 'id-cards-and-tags', 'frames'
                 ];
-                const filteredGallery = galleryData.filter(item => {
-                    if (!item.category) return false;
-                    const catLower = item.category.toLowerCase();
-                    return frameRelevantCats.some(c => c.toLowerCase() === catLower);
+
+                let finalGallery = galleryData;
+                if (section === 'frames') {
+                    finalGallery = galleryData.filter(item => {
+                        if (!item.category) return false;
+                        const catNormalized = item.category.toLowerCase().replace(/[-\s]/g, '');
+                        return frameRelevantCats.some(c => c.toLowerCase().replace(/[-\s]/g, '') === catNormalized);
+                    });
+                }
+ 
+                // Merge datasets, sort by date, then deduplicate
+                // Sorting FIRST ensures that when we deduplicate, we keep the version from the table we prefer OR the newest one.
+                const allItems = [...framesData, ...finalGallery].sort((a, b) => {
+                    return new Date(b.created_at || 0) - new Date(a.created_at || 0);
                 });
 
-                // Merge datasets. Gallery items won't have badgetext, which is handled by the frames.html template.
-                const combined = [...framesData, ...filteredGallery];
+                const seenPaths = new Set();
+                const combined = [];
+                
+                allItems.forEach(item => {
+                    const path = (item.imagepath || item.clientimage || '').toLowerCase().trim();
+                    if (path && !seenPaths.has(path)) {
+                        seenPaths.add(path);
+                        combined.push(item);
+                    }
+                });
                 
                 if (combined.length > 0) {
-                    console.log(`✅ Loaded ${combined.length} combined items (Frames: ${framesData.length}, Gallery Sync: ${filteredGallery.length})`);
+                    console.log(`✅ Loaded ${combined.length} deduplicated "${section}" items (Frames: ${framesData.length}, Gallery: ${galleryData.length})`);
                     return combined;
                 }
                 return null;
             }
-
+ 
             const res = await fetch(`${supaUrl}?${params}`, {
                 headers: {
                     'apikey': this.SUPABASE_ANON_KEY,

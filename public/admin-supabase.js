@@ -120,6 +120,9 @@ function renderGrid(grid, type, data) {
         el.className = 'data-item';
         el.innerHTML = `
             <img src="${img}" class="data-item-img" style="opacity:${vis?1:0.4}" onerror="this.src='assets/placeholder.jpg'">
+            ${item._isSynced 
+                ? '<div class="status-badge" style="background:#4338ca; right:auto; left:12px;"><i class="fas fa-sync-alt"></i> Gallery Sync</div>' 
+                : ''}
             ${vis
                 ? '<div class="status-badge"><i class="fas fa-circle" style="color:#10b981;font-size:8px;margin-right:4px;"></i> Live</div>'
                 : '<div class="status-badge hidden"><i class="fas fa-eye-slash"></i> Hidden</div>'}
@@ -128,16 +131,23 @@ function renderGrid(grid, type, data) {
                 <h4 style="margin-top:8px;">${title}</h4>
                 <p>${desc.substring(0,75)}${desc.length>75?'...':''}</p>
             </div>
-            <div class="data-item-actions" style="grid-template-columns:1fr 1fr 1fr;">
-                <button onclick="toggleVisibility('${type}','${item.id}',${!vis})" class="action-btn btn-toggle ${vis?'':'is-hidden'}">
-                    <i class="fas ${vis?'fa-eye-slash':'fa-eye'}"></i> ${vis?'Hide':'Show'}
-                </button>
-                <button onclick="editItem('${type}','${item.id}')" class="action-btn" style="border-right:1px solid var(--border);">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button onclick="deleteItem('${type}','${item.id}')" class="action-btn btn-del">
-                    <i class="fas fa-trash-alt"></i> Del
-                </button>
+            <div class="data-item-actions" style="grid-template-columns:${item._isSynced ? '1fr' : '1fr 1fr 1fr'};">
+                ${item._isSynced 
+                    ? `<div style="padding:12px; font-size:0.8rem; color:var(--text-light); text-align:center; background:#f8fafc;">
+                        <i class="fas fa-info-circle"></i> Manage this in the <b>${type === 'gallery' ? 'Frames' : 'Full Gallery'}</b> tab
+                       </div>`
+                    : `
+                    <button onclick="toggleVisibility('${type}','${item.id}',${!vis})" class="action-btn btn-toggle ${vis?'':'is-hidden'}">
+                        <i class="fas ${vis?'fa-eye-slash':'fa-eye'}"></i> ${vis?'Hide':'Show'}
+                    </button>
+                    <button onclick="editItem('${type}','${item.id}')" class="action-btn" style="border-right:1px solid var(--border);">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button onclick="deleteItem('${type}','${item.id}')" class="action-btn btn-del">
+                        <i class="fas fa-trash-alt"></i> Del
+                    </button>
+                    `
+                }
             </div>`;
         grid.appendChild(el);
     });
@@ -150,6 +160,55 @@ async function fetchData(type) {
     grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:#94a3b8;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
     try {
         const table = TABLE[type];
+        
+        // Special Case: Frames and Gallery views should both be unified to ensure full visibility
+        if (type === 'frames' || type === 'gallery') {
+            const params = 'select=*';
+            const [framesData, galleryData] = await Promise.all([
+                dbGet('frames', params),
+                dbGet('gallery', params)
+            ]);
+
+            // For Frames view, filter gallery items by frame-relevant categories
+            const frameRelevantCats = [
+                'passport', 'acrylic', 'collage', 'certificate', 'badges', 'id-cards', 'id cards',
+                'passport-frames', 'acrylic-frames', 'collage-frames', 'bulk-certificate', 'badges-frames', 'id-cards-and-tags', 'frames'
+            ];
+            
+            let finalGallery = galleryData;
+            if (type === 'frames') {
+                finalGallery = galleryData.filter(item => {
+                    if (!item.category) return false;
+                    const catNormalized = item.category.toLowerCase().replace(/[-\s]/g, '');
+                    return frameRelevantCats.some(c => c.toLowerCase().replace(/[-\s]/g, '') === catNormalized);
+                });
+            }
+
+            // Tag items that are "synced" from the other table
+            const taggedFrames = framesData.map(item => ({ ...item, _isSynced: type === 'gallery' }));
+            const taggedGallery = finalGallery.map(item => ({ ...item, _isSynced: type === 'frames' }));
+
+            // Merge datasets, sort by date DESC, then deduplicate
+            const allItems = [...taggedFrames, ...taggedGallery].sort((a, b) => {
+                return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+            });
+
+            // Deduplicate by image path, keeping the newest one
+            const seenPaths = new Set();
+            const combined = [];
+            
+            allItems.forEach(item => {
+                const path = (item.imagepath || item.clientimage || '').toLowerCase().trim();
+                if (path && !seenPaths.has(path)) {
+                    seenPaths.add(path);
+                    combined.push(item);
+                }
+            });
+
+            renderGrid(grid, type, combined);
+            return;
+        }
+
         const params = SECTION[type] ? `section=eq.${SECTION[type]}` : 'select=*';
         const data = await dbGet(table, params);
         renderGrid(grid, type, data);
